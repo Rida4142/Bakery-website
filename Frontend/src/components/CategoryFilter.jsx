@@ -1,18 +1,32 @@
+const EMOJIS = {
+  All: "🍽️", Donuts: "🍩", Cookies: "🍪",
+  Breads: "🍞", Cakes: "🎂", Pastries: "🥐",
+};
+
 const CategoryFilter = ({ categories, selected, onSelect }) => {
   return (
-    <div className="flex flex-wrap gap-3 justify-center mb-6">
+    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
       {categories.map((cat) => (
-        <button
+        <div
           key={cat}
           onClick={() => onSelect(cat)}
-          className={`px-5 py-2 rounded-full border font-medium transition-all
-            ${selected === cat
-              ? "bg-amber-700 text-white border-amber-700"
-              : "bg-white text-amber-700 border-amber-300 hover:bg-amber-50"
-            }`}
+          className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0"
         >
-          {cat}
-        </button>
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl border-2 transition-all
+            ${selected === cat
+              ? "bg-red-600 border-red-600"
+              : "bg-white border-yellow-400"
+            }`}
+          >
+            {selected === cat
+              ? <span className="text-white text-xl">{EMOJIS[cat]}</span>
+              : EMOJIS[cat]
+            }
+          </div>
+          <span className={`text-xs ${selected === cat ? "text-red-600 font-medium" : "text-gray-500"}`}>
+            {cat}
+          </span>
+        </div>
       ))}
     </div>
   );
