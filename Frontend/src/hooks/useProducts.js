@@ -15,9 +15,12 @@ const useProducts = (selectedCategory) => {
           selectedCategory && selectedCategory !== "All"
             ? await getProductsByCategory(selectedCategory)
             : await getProducts();
-        setProducts(res.data);
-      } catch {
+        const data = Array.isArray(res.data) ? res.data : [];
+        setProducts(data);
+      } catch (err) {
+        console.error("Product fetch error:", err);
         setError("Failed to load products.");
+        setProducts([]);
       } finally {
         setLoading(false);
       }

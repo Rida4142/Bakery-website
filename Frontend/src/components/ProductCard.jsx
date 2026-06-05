@@ -1,24 +1,38 @@
-const ProductCard = ({ product }) => {
-  const EMOJI_MAP = {
-    Cakes: "🎂", Pastries: "🥐", Breads: "🍞",
-    Cookies: "🍪", Donuts: "🍩",
+import { useState } from "react";
+
+const EMOJI_MAP = {
+  Cakes: "🎂", Pastries: "🥐", Breads: "🍞",
+  Cookies: "🍪", Donuts: "🍩",
+};
+
+const ProductCard = ({ product, delay = 0, onAdd }) => {
+  const [added, setAdded] = useState(false);
+
+  const handleAdd = () => {
+    setAdded(true);
+    onAdd();
+    setTimeout(() => setAdded(false), 800);
   };
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-red-100 cursor-pointer hover:shadow-md transition-shadow">
-      <div className="bg-red-50 h-24 flex items-center justify-center text-4xl">
+    <div className="product-card" style={{ animationDelay: `${delay}s` }}>
+      <div className="product-card-img">
         {product.image
-          ? <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+          ? <img src={product.image} alt={product.name} />
           : EMOJI_MAP[product.category] || "🍰"
         }
       </div>
-      <div className="p-3">
-        <p className="text-xs text-red-500 font-medium">{product.category}</p>
-        <p className="text-sm font-medium text-gray-800 mt-0.5 truncate">{product.name}</p>
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-sm font-medium text-gray-900">${product.price}</span>
-          <button className="w-7 h-7 rounded-full bg-red-600 text-white text-lg flex items-center justify-center hover:bg-red-700 transition-colors">
-            +
+      <div className="product-card-info">
+        <p className="product-card-category">{product.category}</p>
+        <p className="product-card-name">{product.name}</p>
+        <div className="product-card-row">
+          <span className="product-card-price">${product.price}</span>
+          <button
+            className={`product-card-add ${added ? "added" : ""}`}
+            onClick={handleAdd}
+            aria-label="Add to order"
+          >
+            {added ? "✓" : "+"}
           </button>
         </div>
       </div>
