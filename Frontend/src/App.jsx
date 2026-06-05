@@ -2,6 +2,12 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import MenuPage from './pages/MenuPage'
 import HomePage from './pages/HomePage'
 import TrackingPage from './pages/TrackingPage'
+import AdminDashboard from './pages/AdminDashboard'
+import Orders from './pages/Orders'
+import Menu from './pages/Menu'
+import SalesHistory from './pages/SalesHistory'
+import Reports from './pages/Reports'
+import Settings from './pages/Settings'
 
 function App() {
   return (
