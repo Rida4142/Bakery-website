@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Sidebar from '../components/Admin/Sidebar'
+import Sidebar from '../components/Sidebar'
 
 export default function AdminLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
