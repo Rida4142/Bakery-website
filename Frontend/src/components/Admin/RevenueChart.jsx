@@ -1,57 +1,34 @@
-// Mock data for revenue trend over last 7 days
-const mockRevenueData = [
-  { date: 'Mon', revenue: 2400 },
-  { date: 'Tue', revenue: 1398 },
-  { date: 'Wed', revenue: 9800 },
-  { date: 'Thu', revenue: 3908 },
-  { date: 'Fri', revenue: 4800 },
-  { date: 'Sat', revenue: 3800 },
-  { date: 'Sun', revenue: 5300 }
-]
+import { useEffect, useState } from 'react';
+import { getOrders } from '../../services/orderService';
 
 export default function RevenueChart() {
-  // Find max value for scaling
-  const maxValue = Math.max(...mockRevenueData.map(d => d.revenue))
-
+  const [revenue, setRevenue] = useState([]);
+  useEffect(() => {
+    const orders = getOrders();
+    const last7Days = [...Array(7)].map((_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      return date.toLocaleDateString();
+    }).reverse();
+    const dailyRevenue = last7Days.map(day => {
+      const total = orders.filter(order => new Date(order.createdAt).toLocaleDateString() === day)
+        .reduce((sum, order) => sum + order.total, 0);
+      return total;
+    });
+    setRevenue(dailyRevenue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
-    <div className="rounded-[20px] p-6 lg:p-8 shadow-md" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
-      <h3 className="text-lg font-bold mb-6" style={{ color: '#1F2937' }}>
-        Revenue Trend
-      </h3>
-
-      {/* Bar Chart using CSS */}
-      <div className="space-y-4">
-        {mockRevenueData.map((item, index) => {
-          const percentage = (item.revenue / maxValue) * 100
-          return (
-            <div key={index}>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium" style={{ color: '#6B7280' }}>
-                  {item.date}
-                </span>
-                <span className="text-sm font-bold" style={{ color: '#E63946' }}>
-                  ${item.revenue}
-                </span>
-              </div>
-              <div
-                className="h-8 rounded-lg transition-all"
-                style={{
-                  backgroundColor: '#FEE2E4',
-                  width: `${percentage}%`
-                }}
-              >
-                <div
-                  className="h-full rounded-lg"
-                  style={{
-                    backgroundColor: '#E63946',
-                    width: '100%'
-                  }}
-                />
-              </div>
-            </div>
-          )
-        })}
+    <div className="bg-white rounded-2xl p-6 shadow-sm">
+      <h3 className="font-semibold mb-4">Revenue (Last 7 Days)</h3>
+      <div className="h-64 flex items-end gap-2">
+        {revenue.map((val, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center">
+            <div className="w-full bg-primary rounded-t-lg" style={{ height: `${(val / Math.max(...revenue, 1)) * 200}px` }}></div>
+            <span className="text-xs mt-2">{val} Rs</span>
+          </div>
+        ))}
       </div>
     </div>
-  )
+  );
 }

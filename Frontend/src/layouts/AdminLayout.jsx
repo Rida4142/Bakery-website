@@ -1,34 +1,32 @@
-import { useState } from 'react'
-import Sidebar from '../components/Sidebar'
+import { Link, Outlet } from 'react-router-dom';
+import { LayoutDashboard, ShoppingBag, TrendingUp, Settings } from 'lucide-react';
 
 export default function AdminLayout({ children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-
   return (
-    <div className="flex min-h-screen" style={{ backgroundColor: '#FFF8F5' }}>
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
-
-      {/* Main Content */}
-      <main className="flex-1">
-        {/* Mobile Header */}
-        <div className="lg:hidden flex items-center justify-between p-4 border-b" style={{ borderColor: '#E5E7EB' }}>
-          <h1 className="text-lg font-semibold" style={{ color: '#1F2937' }}>Bakery Admin</h1>
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-lg hover:bg-gray-100"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+      <aside className="w-64 bg-white shadow-sm hidden md:block">
+        <div className="p-6">
+          <h2 className="text-xl font-bold text-primary">SweetBites Admin</h2>
         </div>
-
-        {/* Page Content */}
-        <div className="p-6 lg:p-8">
-          {children}
-        </div>
+        <nav className="mt-6">
+          <Link to="/admin" className="flex items-center gap-3 px-6 py-3 text-gray-700 hover:bg-primary/10 hover:text-primary">
+            <LayoutDashboard size={20} /> Dashboard
+          </Link>
+          <Link to="/admin/orders" className="flex items-center gap-3 px-6 py-3 text-gray-700 hover:bg-primary/10 hover:text-primary">
+            <ShoppingBag size={20} /> Orders
+          </Link>
+          <Link to="/admin/products" className="flex items-center gap-3 px-6 py-3 text-gray-700 hover:bg-primary/10 hover:text-primary">
+            <TrendingUp size={20} /> Products
+          </Link>
+          <Link to="/admin/settings" className="flex items-center gap-3 px-6 py-3 text-gray-700 hover:bg-primary/10 hover:text-primary">
+            <Settings size={20} /> Settings
+          </Link>
+        </nav>
+      </aside>
+      <main className="flex-1 p-6 lg:p-8">
+        {children}
       </main>
     </div>
-  )
+  );
 }
