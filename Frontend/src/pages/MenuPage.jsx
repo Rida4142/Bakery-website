@@ -2,13 +2,15 @@ import { useState } from "react";
 import useProducts from "../hooks/useProducts";
 import ProductCard from "../components/ProductCard";
 import CategoryFilter from "../components/CategoryFilter";
+import { useCart } from "../context/CartContext";
 import "../menu.css";
 
 const CATEGORIES = ["All", "Donuts", "Cookies", "Breads", "Cakes", "Pastries"];
 
 const MenuPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [cartCount, setCartCount] = useState(0);
+  const { getCartCount } = useCart();
+  const cartCount = getCartCount();
   const { products, loading, error } = useProducts(selectedCategory);
 
   return (
@@ -21,7 +23,7 @@ const MenuPage = () => {
           <span className="menu-nav-logo">🍰 Sweet Bakery</span>
           <div className="menu-nav-right">
             <div className="menu-nav-cart-wrap">
-              <button className="menu-nav-cart" aria-label="Cart">🛒</button>
+              <button id="menu-page-cart" className="menu-nav-cart" aria-label="Cart">🛒</button>
               <span className="menu-nav-badge">{cartCount}</span>
             </div>
           </div>
@@ -99,15 +101,14 @@ const MenuPage = () => {
           )}
 
           <div className="products-grid">
-            {!loading && !error && products.map((product, i) => (
-              <ProductCard
-                key={product._id}
-                product={product}
-                delay={i * 0.05}
-                onAdd={() => setCartCount(c => c + 1)}
-              />
-            ))}
-          </div>
+             {!loading && !error && products.map((product, i) => (
+               <ProductCard
+                 key={product._id}
+                 product={product}
+                 delay={i * 0.05}
+               />
+             ))}
+           </div>
         </div>
 
       </div>

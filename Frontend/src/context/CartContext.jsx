@@ -10,12 +10,16 @@ export const CartProvider = ({ children }) => {
     const savedCart = localStorage.getItem('cart');
     return savedCart ? JSON.parse(savedCart) : [];
   });
+  const [lastAddedItem, setLastAddedItem] = useState(null);
+  const [showAddedToast, setShowAddedToast] = useState(false);
+  const [flyCart, setFlyCart] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (product, selectedSize = null) => {
+  const addToCart = (product, selectedSize = null, quantity = 1) => {
+    let price = selectedSize ? product.sizePriceMap?.[selectedSize] : product.price;
     setCartItems(prevItems => {
       const existingItemIndex = prevItems.findIndex(item => 
         item.id === product.id && item.selectedSize === selectedSize
@@ -23,17 +27,30 @@ export const CartProvider = ({ children }) => {
 
       if (existingItemIndex !== -1) {
         const updatedItems = [...prevItems];
-        updatedItems[existingItemIndex].quantity += 1;
+        updatedItems[existingItemIndex] = {
+          ...updatedItems[existingItemIndex],
+          quantity: (updatedItems[existingItemIndex].quantity || 1) + quantity,
+        };
         return updatedItems;
       } else {
         return [...prevItems, { 
           ...product, 
-          quantity: 1,
+          quantity,
           selectedSize: selectedSize,
-          price: selectedSize ? product.sizePriceMap?.[selectedSize] : product.price
+          price,
         }];
       }
     });
+
+    const itemName = selectedSize ? `${product.name} (${selectedSize})` : product.name;
+    setLastAddedItem(itemName);
+    setShowAddedToast(true);
+    setFlyCart(product);
+    setTimeout(() => {
+      setShowAddedToast(false);
+      setFlyCart(null);
+      setLastAddedItem(null);
+    }, 2000);
   };
 
   const removeFromCart = (id, selectedSize) => {
@@ -60,7 +77,7 @@ export const CartProvider = ({ children }) => {
   };
 
   const getCartCount = () => {
-    return cartItems.reduce((count, item) => count + item.quantity, 0);
+    return cartItems.length;
   };
 
   return (
@@ -71,9 +88,15 @@ export const CartProvider = ({ children }) => {
       updateQuantity,
       clearCart,
       getCartTotal,
-      getCartCount
+      getCartCount,
+      lastAddedItem,
+      showAddedToast,
+      setShowAddedToast,
+      flyCart,
     }}>
       {children}
     </CartContext.Provider>
   );
 };
+
+export default CartContext;

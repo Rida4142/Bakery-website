@@ -1,31 +1,39 @@
 import { useEffect, useState } from 'react';
-import { getOrders } from '../../services/orderService';
+import { getTopProducts } from '../../services/api';
 
 export default function TopProductsCard() {
   const [topProducts, setTopProducts] = useState([]);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    const orders = getOrders();
-    const productCount = {};
-    orders.forEach(order => {
-      order.items.forEach(item => {
-        productCount[item.name] = (productCount[item.name] || 0) + item.quantity;
-      });
-    });
-    const sorted = Object.entries(productCount).sort((a,b) => b[1] - a[1]).slice(0,5);
-    setTopProducts(sorted);
-     // eslint-disable-next-line react-hooks/exhaustive-deps
+    const fetchTopProducts = async () => {
+      try {
+        const response = await getTopProducts();
+        setTopProducts(response.data);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load top products');
+      }
+    };
+
+    fetchTopProducts();
   }, []);
+
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm">
       <h3 className="font-semibold mb-4">Top Selling Products</h3>
-      <ul className="space-y-3">
-        {topProducts.map(([name, qty]) => (
-          <li key={name} className="flex justify-between">
-            <span className="text-sm">{name}</span>
-            <span className="font-medium">{qty} sold</span>
-          </li>
-        ))}
-      </ul>
+      {error ? (
+        <p className="text-sm text-red-500">{error}</p>
+      ) : (
+        <ul className="space-y-3">
+          {topProducts.map(({ name, count }) => (
+            <li key={name} className="flex justify-between">
+              <span className="text-sm">{name}</span>
+              <span className="font-medium">{count} sold</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

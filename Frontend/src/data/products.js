@@ -1,90 +1,88 @@
 // src/data/products.js
-// Helper to generate pizza size variants
-const createPizzaVariants = (baseId, baseName, sizePrices, description, image) => {
-  const variants = [];
-  const sizes = ['S', 'M', 'L', 'XL'];
-  sizes.forEach(size => {
-    if (sizePrices[size]) {
-      variants.push({
-        id: `${baseId}-${size}`,
-        name: `${baseName} (${size})`,
-        price: sizePrices[size],
-        sizePriceMap: sizePrices,
-        selectedSizeDefault: size,
-        category: 'Pizza',
-        description: description,
-        image: image,
-        hasSize: true
-      });
-    }
+// Helper to create a unique pizza product with size map and default S price
+const createPizza = (id, name, sizePrices, description, image) => {
+  const hasSize = Object.values(sizePrices).some(v => v !== null);
+  const cleanPrices = {};
+  Object.entries(sizePrices).forEach(([size, price]) => {
+    if (price !== null) cleanPrices[size] = price;
   });
-  return variants;
+  return {
+    id,
+    name,
+    price: cleanPrices.S || Object.values(cleanPrices)[0],
+    sizePriceMap: Object.keys(cleanPrices).length > 1 ? cleanPrices : null,
+    selectedSizeDefault: 'S',
+    hasSize: Object.keys(cleanPrices).length > 1,
+    category: 'Pizza',
+    description,
+    image,
+  };
 };
 
 // Pizza data from images
 const idealSpecialPrices = { S: 750, M: 1100, L: 1600, XL: 2100 };
 const reshmiKababPrices = { S: 750, M: 1100, L: 1600, XL: 2100 };
-const crownCrustPrices = { S: 800, M: 1100, L: 1600, XL: null };
+const crownCrustPrices = { S: 800, M: 1100, L: 1600 };
 const superIdealPrices = { S: 650, M: 950, L: 1450, XL: 1900 };
 
 const pizzaImage = "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop";
 const superIdealImage = "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400&h=300&fit=crop";
 
 const pizzas = [
-  ...createPizzaVariants('ideal-special', 'Ideal Special Pizza', idealSpecialPrices, 'Our signature special pizza with premium toppings', pizzaImage),
-  ...createPizzaVariants('reshmi-kabab', 'Reshmi Kabab Pizza', reshmiKababPrices, 'Tender reshmi kabab topping with cheese', pizzaImage),
-  ...createPizzaVariants('crown-crust', 'Crown Crust Pizza', crownCrustPrices, 'Delicious crown crust with cheesy filling', pizzaImage),
-  ...createPizzaVariants('grilled-chicken', 'Grilled Chicken Pizza', superIdealPrices, 'Grilled chicken with mushrooms, tomato, capsicum, onion', superIdealImage),
-  ...createPizzaVariants('sausages', 'Sausages Pizza', superIdealPrices, 'Chicken/beef sausages, olives, mushrooms, tomato', superIdealImage),
-  ...createPizzaVariants('fajita', 'Fajita Pizza', superIdealPrices, 'Spicy fajita chicken with capsicum and onion', superIdealImage),
-  ...createPizzaVariants('barbq', 'Bar B-Q Pizza', superIdealPrices, 'BBQ chicken with mushrooms and capsicum', superIdealImage),
-  ...createPizzaVariants('tikka', 'Tikka Pizza', superIdealPrices, 'Tikka chicken with cheese and vegetables', superIdealImage),
-  ...createPizzaVariants('supreme', 'Supreme Pizza', superIdealPrices, 'Supreme chicken with olives and onions', superIdealImage),
-  ...createPizzaVariants('achari', 'Achari Pizza', superIdealPrices, 'Achari chicken with pickled spices', superIdealImage),
-  ...createPizzaVariants('vegetable', 'Vegetable Pizza', superIdealPrices, 'Fresh vegetables with cheese', superIdealImage),
-  ...createPizzaVariants('cheese-lover', 'Cheese Lover Pizza', superIdealPrices, 'Combination of cheddar and mozzarella', superIdealImage),
-  ...createPizzaVariants('four-square', 'Four Square Pizza', superIdealPrices, 'Four cheese blend with fresh tomato', superIdealImage),
-  ...createPizzaVariants('jalapeno', 'Jalapeno Pizza', superIdealPrices, 'Spicy jalapeno with chicken and olives', superIdealImage),
+  createPizza('ideal-special', 'Ideal Special Pizza', idealSpecialPrices, 'Our signature special pizza with premium toppings', pizzaImage),
+  createPizza('reshmi-kabab', 'Reshmi Kabab Pizza', reshmiKababPrices, 'Tender reshmi kabab topping with cheese', './assets/pizzas/ReshmikebabPizza.webp'),
+  createPizza('crown-crust', 'Crown Crust Pizza', crownCrustPrices, 'Delicious crown crust with cheesy filling', './assets/pizzas/CrownCrustPizza.webp'),
+  createPizza('grilled-chicken', 'Grilled Chicken Pizza', superIdealPrices, 'Grilled chicken with mushrooms, tomato, capsicum, onion', './assets/pizzas/GrilledChickenPizza.webp'),
+  createPizza('sausages', 'Sausages Pizza', superIdealPrices, 'Chicken/beef sausages, olives, mushrooms, tomato', './assets/pizzas/SausagesPizza.webp'),
+  createPizza('fajita', 'Fajita Pizza', superIdealPrices, 'Spicy fajita chicken with capsicum and onion', './assets/pizzas/FajitaPizza.webp'),
+  createPizza('barbq', 'Bar B-Q Pizza', superIdealPrices, 'BBQ chicken with mushrooms and capsicum', './assets/pizzas/BBQPizza.webp'),
+  createPizza('tikka', 'Tikka Pizza', superIdealPrices, 'Tikka chicken with cheese and vegetables', './assets/pizzas/TikkaPizza.webp'),
+  createPizza('supreme', 'Supreme Pizza', superIdealPrices, 'Supreme chicken with olives and onions', './assets/pizzas/SupremePizza.webp'),
+  createPizza('achari', 'Achari Pizza', superIdealPrices, 'Achari chicken with pickled spices', './assets/pizzas/AchariPizza.webp'),
+  createPizza('vegetable', 'Vegetable Pizza', superIdealPrices, 'Fresh vegetables with cheese', './assets/pizzas/VegetablePizza.webp'),
+  createPizza('cheese-lover', 'Cheese Lover Pizza', superIdealPrices, 'Combination of cheddar and mozzarella', './assets/pizzas/CheeseLoverPizza.webp'),
+  createPizza('four-square', 'Four Square Pizza', superIdealPrices, 'Four cheese blend with fresh tomato', './assets/pizzas/4squarePizza.webp'),
+  createPizza('jalapeno', 'Jalapeno Pizza', superIdealPrices, 'Spicy jalapeno with chicken and olives', './assets/pizzas/JalapenoPizza.webp'),
 ];
 
 // Crispy Chicken items
 const crispyChicken = [
-  { id: 'leg-piece', name: 'Crispy Chicken Leg Piece', price: 500, category: 'Crispy Chicken', description: 'Juicy leg piece, crispy outside', image: 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=400&h=300&fit=crop' },
-  { id: 'chest-piece', name: 'Crispy Chicken Chest Piece', price: 550, category: 'Crispy Chicken', description: 'Tender chest piece', image: 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=400&h=300&fit=crop' },
-  { id: 'hot-wings', name: 'Hot Wings', price: 600, category: 'Crispy Chicken', description: 'Spicy hot wings', image: 'https://images.unsplash.com/photo-1562967914-608f82629710?w=400&h=300&fit=crop' },
-  { id: 'hot-shot', name: 'Hot Shot', price: 600, category: 'Crispy Chicken', description: 'Extra spicy chicken shot', image: 'https://images.unsplash.com/photo-1562967914-608f82629710?w=400&h=300&fit=crop' },
+  { id: 'leg-piece', name: 'Crispy Chicken Leg Piece', price: 500, category: 'Crispy Chicken', description: 'Juicy leg piece, crispy outside', image: './assets/chicken/legPiece.webp' },
+  { id: 'chest-piece', name: 'Crispy Chicken Chest Piece', price: 550, category: 'Crispy Chicken', description: 'Tender chest piece', image: './assets/chicken/chestPiece.webp' },
+  { id: 'hot-wings', name: 'Hot Wings', price: 600, category: 'Crispy Chicken', description: 'Spicy hot wings', image: './assets/chicken/hotWings.webp' },
+  { id: 'hot-shot', name: 'Hot Shot', price: 600, category: 'Crispy Chicken', description: 'Extra spicy chicken shot', image: './assets/chicken/hotShots.webp' },
 ];
 
 // Burgers
 const burgers = [
-  { id: 'zinger', name: 'Zinger Burger', price: 350, category: 'Burgers', description: 'Crispy zinger with sauce', image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop' },
-  { id: 'tower', name: 'Tower Burger', price: 480, category: 'Burgers', description: 'Double patty tower burger', image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop' },
-  { id: 'chicken-burger', name: 'Chicken Burger', price: 300, category: 'Burgers', description: 'Classic chicken burger', image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop' },
-  { id: 'double-decker', name: 'Double Decker', price: 600, category: 'Burgers', description: 'Double decker with extra cheese', image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop' },
+  { id: 'zinger', name: 'Zinger Burger', price: 350, category: 'Burgers', description: 'Crispy zinger with sauce', image: './assets/burgers/zinger.webp' },
+  { id: 'tower', name: 'Tower Burger', price: 480, category: 'Burgers', description: 'Double patty tower burger', image: './assets/burgers/tower.webp' },
+  { id: 'chicken-burger', name: 'Chicken Burger', price: 300, category: 'Burgers', description: 'Classic chicken burger', image: './assets/burgers/chicken.webp' },
+  { id: 'double-decker', name: 'Double Decker', price: 600, category: 'Burgers', description: 'Double decker with extra cheese', image: './assets/burgers/DD.webp' },
 ];
 
 // Shawarma
 const shawarma = [
-  { id: 'chicken-shawarma', name: 'Chicken Shawarma', price: 150, category: 'Shawarma', description: 'Classic chicken shawarma', image: 'https://images.unsplash.com/photo-1626700059175-7e2ea6c7c6c5?w=400&h=300&fit=crop' },
-  { id: 'chicken-cheese', name: 'Chicken Cheese Shawarma', price: 200, category: 'Shawarma', description: 'With extra melted cheese', image: 'https://images.unsplash.com/photo-1626700059175-7e2ea6c7c6c5?w=400&h=300&fit=crop' },
-  { id: 'paratha-shawarma', name: 'Paratha Shawarma', price: 200, category: 'Shawarma', description: 'Shawarma wrapped in paratha', image: 'https://images.unsplash.com/photo-1626700059175-7e2ea6c7c6c5?w=400&h=300&fit=crop' },
+  { id: 'chicken-shawarma', name: 'Chicken Shawarma', price: 150, category: 'Shawarma', description: 'Classic chicken shawarma', image: './assets/shawarmas/chicken.webp' },
+  { id: 'chicken-cheese', name: 'Chicken Cheese Shawarma', price: 200, category: 'Shawarma', description: 'With extra melted cheese', image: './assets/shawarmas/chickenCheese.webp' },
+  { id: 'paratha-shawarma', name: 'Paratha Shawarma', price: 200, category: 'Shawarma', description: 'Shawarma wrapped in paratha', image: './assets/shawarmas/paratha.webp' },
 ];
 
 // Parathas & Panini
 const parathas = [
-  { id: 'crispy-paratha', name: 'Crispy Paratha', price: 350, category: 'Parathas', description: 'Extra crispy layered paratha', image: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?w=400&h=300&fit=crop' },
-  { id: 'achari-paratha', name: 'Achari Paratha', price: 300, category: 'Parathas', description: 'Achari flavored paratha', image: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?w=400&h=300&fit=crop' },
+  { id: 'crispy-paratha', name: 'Crispy Paratha', price: 350, category: 'Parathas', description: 'Extra crispy layered paratha', image: './assets/paratha/crispy.webp' },
+  { id: 'achari-paratha', name: 'Achari Paratha', price: 300, category: 'Parathas', description: 'Achari flavored paratha', image: './assets/paratha/achari.webp' },
 ];
 
 const panini = [
-  { id: 'bbq-panini', name: 'Bar B-Q Panini', price: 400, category: 'Panini', description: 'Grilled BBQ chicken panini', image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop' },
-  { id: 'grilled-panini', name: 'Grilled Panini', price: 400, category: 'Panini', description: 'Grilled vegetable and cheese panini', image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop' },
+  { id: 'bbq-panini', name: 'Bar B-Q Panini', price: 400, category: 'Panini', description: 'Grilled BBQ chicken panini', image: './assets/panini/bbq.webp' },
+  { id: 'grilled-panini', name: 'Grilled Panini', price: 400, category: 'Panini', description: 'Grilled vegetable and cheese panini', image: './assets/panini/grilled.webp' },
 ];
 
 // Pastas
 const pastas = [
-  { id: 'crunchi-pasta', name: 'Crunchi Pasta', price: 600, category: 'Pasta', description: 'Creamy pasta with crunch', image: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=400&h=300&fit=crop' },
-  { id: 'vegi-chicken-pasta', name: 'Vegi Chicken Pasta', price: 600, category: 'Pasta', description: 'With vegetables and chicken', image: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=400&h=300&fit=crop' },
+  { id: 'crunchi-pasta', name: 'Crunchi Pasta', price: 600, category: 'Pasta', description: 'Creamy pasta with crunch', image: './assets/pasta/crunchi.webp' },
+  { id: 'vegi-chicken-pasta', name: 'Vegi Chicken Pasta', price: 600, category: 'Pasta', description: 'With vegetables and chicken', image: './assets/pasta/vegi.webp' },
 ];
 
 // Sweets Menu
