@@ -42,3 +42,37 @@ export const deleteOrder = (orderId) => {
   const filteredOrders = orders.filter(order => order.id !== orderId);
   localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(filteredOrders));
 };
+
+export const getNextStatuses = (currentStatus, orderType) => {
+  if (orderType === 'delivery') {
+    const flow = {
+      'Pending': 'Confirmed',
+      'Confirmed': 'Out for Delivery',
+      'Out for Delivery': 'Delivered',
+      'Delivered': null,
+    };
+    return flow[currentStatus] || null;
+  } else {
+    const flow = {
+      'Pending': 'Confirmed',
+      'Confirmed': 'Completed',
+      'Completed': null,
+    };
+    return flow[currentStatus] || null;
+  }
+};
+
+export const getStatusColor = (status) => {
+  const colors = {
+    'Pending': 'bg-yellow-100 text-yellow-800',
+    'Confirmed': 'bg-blue-100 text-blue-800',
+    'Out for Delivery': 'bg-purple-100 text-purple-800',
+    'Delivered': 'bg-green-100 text-green-800',
+    'Completed': 'bg-green-100 text-green-800',
+  };
+  return colors[status] || 'bg-gray-100 text-gray-800';
+};
+
+export const getOrderType = (order) => {
+  return order.orderType || 'pickup';
+};

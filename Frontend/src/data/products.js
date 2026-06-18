@@ -1,4 +1,32 @@
 // src/data/products.js
+const DYNAMIC_PRODUCTS_KEY = 'dynamic_products';
+
+const loadDynamicProducts = () => {
+  try {
+    const stored = localStorage.getItem(DYNAMIC_PRODUCTS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const saveProduct = (product) => {
+  const dynamic = loadDynamicProducts();
+  const existingIndex = dynamic.findIndex(p => p.id === product.id);
+  if (existingIndex !== -1) {
+    dynamic[existingIndex] = { ...dynamic[existingIndex], ...product, updatedAt: new Date().toISOString() };
+  } else {
+    dynamic.push({ ...product, id: product.id || `custom-${Date.now()}`, createdAt: new Date().toISOString() });
+  }
+  localStorage.setItem(DYNAMIC_PRODUCTS_KEY, JSON.stringify(dynamic));
+  return product;
+};
+
+export const deleteProduct = (id) => {
+  const dynamic = loadDynamicProducts().filter(p => p.id !== id);
+  localStorage.setItem(DYNAMIC_PRODUCTS_KEY, JSON.stringify(dynamic));
+};
+
 // Helper to create a unique pizza product with size map and default S price
 const createPizza = (id, name, sizePrices, description, image) => {
   const hasSize = Object.values(sizePrices).some(v => v !== null);
@@ -87,10 +115,10 @@ const pastas = [
 
 // Sweets Menu
 const sweets = [
-  { id: 'vanilla-cake-1lb', name: 'Vanilla Cake 1lb', price: 800, category: 'Cakes', description: 'Soft vanilla sponge cake', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9585?w=400&h=300&fit=crop' },
-  { id: 'chocolate-cake-1lb', name: 'Chocolate Cake 1lb', price: 900, category: 'Cakes', description: 'Rich chocolate cake', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9585?w=400&h=300&fit=crop' },
-  { id: 'vanilla-cake-2lb', name: 'Vanilla Cake 2lb', price: 1600, category: 'Cakes', description: 'Large vanilla cake', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9585?w=400&h=300&fit=crop' },
-  { id: 'chocolate-cake-2lb', name: 'Chocolate Cake 2lb', price: 1800, category: 'Cakes', description: 'Large chocolate cake', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9585?w=400&h=300&fit=crop' },
+  { id: 'vanilla-cake-1lb', name: 'Vanilla Cake 1lb', price: 800, category: 'Cakes', description: 'Soft vanilla sponge cake', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9585?w=400&h=300&fit=crop', pickupOnly: true },
+  { id: 'chocolate-cake-1lb', name: 'Chocolate Cake 1lb', price: 900, category: 'Cakes', description: 'Rich chocolate cake', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9585?w=400&h=300&fit=crop', pickupOnly: true },
+  { id: 'vanilla-cake-2lb', name: 'Vanilla Cake 2lb', price: 1600, category: 'Cakes', description: 'Large vanilla cake', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9585?w=400&h=300&fit=crop', pickupOnly: true },
+  { id: 'chocolate-cake-2lb', name: 'Chocolate Cake 2lb', price: 1800, category: 'Cakes', description: 'Large chocolate cake', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9585?w=400&h=300&fit=crop', pickupOnly: true },
   { id: 'donut', name: 'Glazed Donut', price: 150, category: 'Donuts', description: 'Soft glazed donut', image: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400&h=300&fit=crop' },
   { id: 'premium-pastry', name: 'Premium Pastry', price: 200, category: 'Pastries', description: 'Belgian chocolate pastry', image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&h=300&fit=crop' },
   { id: 'regular-pastry', name: 'Regular Pastry', price: 120, category: 'Pastries', description: 'Classic fruit pastry', image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&h=300&fit=crop' },
@@ -98,7 +126,7 @@ const sweets = [
 ];
 
 // Combine all products
-export const products = [
+const staticProducts = [
   ...pizzas,
   ...crispyChicken,
   ...burgers,
@@ -108,6 +136,8 @@ export const products = [
   ...pastas,
   ...sweets,
 ];
+
+export const products = [...staticProducts, ...loadDynamicProducts()];
 
 // Categories for filtering and display
 export const categories = [
