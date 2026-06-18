@@ -42,7 +42,7 @@ const Home = () => {
             </div>
             <div className="flex-1">
               <img 
-                src="assets/Fresh-bakery.png"
+                src="assets/Homepage.jpg"
                 alt="Fresh Bakery"
                 className="rounded-3xl shadow-xl object-cover w-full h-80 md:h-96"
               />

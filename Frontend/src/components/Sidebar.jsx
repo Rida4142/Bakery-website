@@ -55,7 +55,7 @@ export default function Sidebar({ open, setOpen }) {
               🥐
             </div>
             <div>
-              <h2 className="font-bold text-lg" style={{ color: '#1F2937' }}>BakeryBox</h2>
+              <h2 className="font-bold text-lg" style={{ color: '#1F2937' }}>SuperIdeal</h2>
               <p className="text-xs" style={{ color: '#6B7280' }}>Admin Panel</p>
             </div>
           </div>
@@ -88,7 +88,7 @@ export default function Sidebar({ open, setOpen }) {
         {/* Footer Info */}
         <div className="absolute bottom-0 left-0 right-0 p-6 border-t" style={{ borderColor: '#E5E7EB' }}>
           <p className="text-xs" style={{ color: '#6B7280' }}>
-            © 2024 BakeryBox. All rights reserved.
+            © 2024 SuperIdeal. All rights reserved.
           </p>
         </div>
       </aside>
