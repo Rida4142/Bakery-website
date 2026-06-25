@@ -10,20 +10,14 @@ const generateWhatsAppMessage = (order) => {
     })
     .join('\n');
 
-  const message = `
-🛒 *NEW ORDER — ${order.orderNumber}*
+  const deliveryInfo = order.orderType === 'delivery'
+    ? `🚚 Delivery Distance: ${order.deliveryDistance || 0} km\n🏷️ Delivery Fee: Rs.${order.deliveryFee || 0}\n📍 Address: ${order.address || 'Not provided'}`
+    : '🏠 Pickup order';
 
-👤 *Customer:* ${order.customerName}
-📞 *Phone:* ${order.phone}
-📍 *Address:* ${order.address || 'Not provided'}
+  const emailLine = order.email ? `✉️ *Email:* ${order.email}\n` : '';
+  const notesLine = order.notes ? `📝 *Notes:* ${order.notes}\n` : '';
 
-*Items:*
-${itemLines}
-
-💰 *Total: Rs.${order.totalAmount}*
-
-_Sent via website order form_
-`.trim();
+  const message = `\n🛒 *NEW ORDER — ${order.orderNumber}*\n\n👤 *Customer:* ${order.customerName}\n📞 *Phone:* ${order.phone}\n${emailLine}${notesLine}${deliveryInfo}\n\n*Items:*\n${itemLines}\n\n💰 *Total: Rs.${order.totalAmount}*\n\n_Sent via website order form_`.trim();
 
   return message;
 };

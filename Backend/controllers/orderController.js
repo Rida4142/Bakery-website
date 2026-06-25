@@ -1,27 +1,57 @@
+const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Bakery = require('../models/Bakery');
 const generateOrderNumber = require('../utils/generateOrderNumber');
 const generateWhatsAppMessage = require('../utils/generateWhatsAppMessage');
 
+
 // POST /api/orders — public, called by customer at checkout
 const createOrder = async (req, res) => {
   try {
-    const { customerName, phone, email, address, items } = req.body;
+    const {
+      customerName,
+      phone,
+      email,
+      address,
+      notes,
+      items,
+      orderType = 'pickup',
+      deliveryDistance = 0,
+      deliveryFee = 0,
+    } = req.body;
 
-    if (!customerName || !phone || !items || items.length === 0)
+    console.log('ORDER PAYLOAD RECEIVED:', JSON.stringify(req.body, null, 2));
+
+    if (!customerName || !phone || !Array.isArray(items) || items.length === 0)
       return res.status(400).json({ message: 'Name, phone, and at least one item are required' });
 
-    const bakery = await Bakery.findOne();
+    if (orderType === 'delivery' && !address)
+      return res.status(400).json({ message: 'Delivery orders require an address' });
 
-    // Validate items and compute total from DB prices — never trust prices sent from frontend
-    let totalAmount = 0;
+    const bakery = await Bakery.findOne();
+    if (!bakery) return res.status(500).json({ message: 'Bakery configuration is missing' });
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'Order must include at least one item' });
+    }
+
+    let subtotal = 0;
     const validatedItems = [];
 
     for (const item of items) {
-      const product = await Product.findById(item.productId);
-      if (!product || !product.available)
+  if (!item.productId) {
+    return res.status(400).json({ message: 'Each item must have a productId' });
+  }
+  const productIdStr = item.productId.toString().trim();
+  if (!mongoose.isValidObjectId(productIdStr)) {
+    return res.status(400).json({ message: `Invalid productId: ${productIdStr}` });
+  }
+  const product = await Product.findById(productIdStr);
+      
+      if (!product || !product.available) {
         return res.status(400).json({ message: `Product not found or unavailable: ${item.productId}` });
+      }
 
       let price;
       if (product.sizes && product.sizes.length > 0) {
@@ -33,17 +63,23 @@ const createOrder = async (req, res) => {
         price = product.price;
       }
 
-      totalAmount += price * item.quantity;
+      if (!item.quantity || item.quantity <= 0)
+        return res.status(400).json({ message: `Invalid quantity for product "${product.name}"` });
+
+      subtotal += price * item.quantity;
       validatedItems.push({
         productId: product._id,
-        name: product.name,      // snapshot
+        name: product.name,
         size: item.size || null,
-        price,                   // snapshot
-        quantity: item.quantity
+        price,
+        quantity: item.quantity,
       });
     }
 
     const orderNumber = await generateOrderNumber();
+    const numericDeliveryFee = Number(deliveryFee) || 0;
+    const numericDistance = Number(deliveryDistance) || 0;
+    const totalAmount = subtotal + numericDeliveryFee;
 
     const order = await Order.create({
       bakeryId: bakery._id,
@@ -51,17 +87,20 @@ const createOrder = async (req, res) => {
       customerName,
       phone,
       email,
-      address,
+      address: orderType === 'delivery' ? address : '',
+      notes: notes || '',
       items: validatedItems,
-      totalAmount
+      orderType,
+      deliveryDistance: numericDistance,
+      deliveryFee: numericDeliveryFee,
+      subtotal,
+      totalAmount,
     });
 
-    // Generate and store the WhatsApp message
     const whatsappMessage = generateWhatsAppMessage(order);
     order.whatsappMessage = whatsappMessage;
     await order.save();
 
-    // Build the wa.me link — frontend opens this
     const encodedMessage = encodeURIComponent(whatsappMessage);
     const whatsappLink = `https://wa.me/${bakery.whatsappNumber}?text=${encodedMessage}`;
 

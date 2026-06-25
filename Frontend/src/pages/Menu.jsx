@@ -1,18 +1,19 @@
 // src/pages/Menu.jsx
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { products, categories } from '../data/products';
+import useProducts from '../hooks/useProducts';
+import { categories } from '../data/products';
 import ProductCard from '../components/ProductCard';
 
 const Menu = () => {
   const [searchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
-  const [activeCategory, setActiveCategory] = useState(categoryParam || 'all');
+  const [activeCategory, setActiveCategory] = useState(
+    categoryParam && categoryParam.toLowerCase() !== 'all' ? categoryParam : 'All'
+  );
+  const { products, loading, error } = useProducts(activeCategory);
 
-  const filteredProducts = useMemo(() => {
-    if (activeCategory === 'all') return products;
-    return products.filter(p => p.category === activeCategory);
-  }, [activeCategory]);
+  const filteredProducts = activeCategory === 'All' ? products : products;
 
   return (
     <div className="py-10">
@@ -25,9 +26,9 @@ const Menu = () => {
           {categories.map(cat => (
             <button
               key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
+              onClick={() => setActiveCategory(cat.name)}
               className={`px-5 py-2 rounded-full font-medium transition ${
-                activeCategory === cat.id
+                activeCategory === cat.name
                   ? 'bg-primary text-white'
                   : 'bg-white text-textPrimary hover:bg-gray-100 border border-gray-200'
               }`}
@@ -38,14 +39,22 @@ const Menu = () => {
         </div>
 
         {/* Products Grid */}
-        {filteredProducts.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-textSecondary">Loading menu items...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-red-500">{error}</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-textSecondary">No products found in this category.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product._id || product.id} product={product} />
             ))}
           </div>
         )}

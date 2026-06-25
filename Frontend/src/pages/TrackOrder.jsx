@@ -1,61 +1,62 @@
 // src/pages/TrackOrder.jsx
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getOrderById } from '../services/orderService';
+import { getOrderByNumber } from '../services/api';
 import { Package, CheckCircle, CookingPot, Bike, Home, AlertCircle } from 'lucide-react';
 
 const statusConfig = {
   'Pending': { icon: Package, color: 'text-yellow-500', bg: 'bg-yellow-100' },
-  'Accepted': { icon: CheckCircle, color: 'text-blue-500', bg: 'bg-blue-100' },
+  'Confirmed': { icon: CheckCircle, color: 'text-blue-500', bg: 'bg-blue-100' },
   'Preparing': { icon: CookingPot, color: 'text-orange-500', bg: 'bg-orange-100' },
   'Out For Delivery': { icon: Bike, color: 'text-purple-500', bg: 'bg-purple-100' },
   'Delivered': { icon: Home, color: 'text-green-500', bg: 'bg-green-100' },
 };
 
-const statusOrder = ['Pending', 'Accepted', 'Preparing', 'Out For Delivery', 'Delivered'];
+const statusOrder = ['Pending', 'Confirmed', 'Preparing', 'Out For Delivery', 'Delivered'];
 
 const TrackOrder = () => {
   const [searchParams] = useSearchParams();
   const orderIdFromUrl = searchParams.get('id');
 
-  const [orderId, setOrderId] = useState('');
+  const [orderId, setOrderId] = useState(orderIdFromUrl || '');
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
-  const [searched, setSearched] = useState(false);
 
   // Auto-search when URL contains an order ID
   useEffect(() => {
-    if (orderIdFromUrl) {
-      setOrderId(orderIdFromUrl);
-      const foundOrder = getOrderById(orderIdFromUrl);
-      if (foundOrder) {
-        setOrder(foundOrder);
+    const fetchOrder = async (orderNumber) => {
+      try {
+        const response = await getOrderByNumber(orderNumber);
+        setOrder(response.data);
         setError('');
-      } else {
+      } catch {
         setOrder(null);
         setError('Order not found. Please check your Order ID.');
       }
-      setSearched(true);
+    };
+
+    if (orderIdFromUrl) {
+      fetchOrder(orderIdFromUrl);
     }
   }, [orderIdFromUrl]);
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!orderId.trim()) {
       setError('Please enter an Order ID');
       return;
     }
-    const foundOrder = getOrderById(orderId.trim());
-    if (foundOrder) {
-      setOrder(foundOrder);
+    try {
+      const response = await getOrderByNumber(orderId.trim());
+      setOrder(response.data);
       setError('');
-    } else {
+    } catch {
       setOrder(null);
       setError('Order not found. Please check your Order ID.');
     }
-    setSearched(true);
   };
 
   const currentStatusIndex = order ? statusOrder.indexOf(order.status) : -1;
+  const orderType = order?.orderType || 'pickup';
 
   return (
     <div className="py-12">
@@ -84,7 +85,7 @@ const TrackOrder = () => {
           {order && (
             <div className="mt-8">
               <div className="border-b pb-4 mb-4">
-                <h2 className="text-xl font-bold">Order #{order.id}</h2>
+                <h2 className="text-xl font-bold">Order #{order.orderNumber}</h2>
                 <p className="text-textSecondary">Placed on {new Date(order.createdAt).toLocaleString()}</p>
               </div>
 
@@ -129,10 +130,18 @@ const TrackOrder = () => {
                   </div>
                 ))}
                 <div className="border-t mt-3 pt-3 font-bold flex justify-between">
-                  <span>Total Paid:</span>
-                  <span>Rs. {order.total}</span>
+                  <span>Subtotal:</span>
+                  <span>Rs. {order.subtotal || 0}</span>
                 </div>
-                <p className="text-xs text-textSecondary mt-3">Delivery to: {order.customer.address}</p>
+                <div className="flex justify-between text-sm text-gray-600 mt-1">
+                  <span>Delivery Fee</span>
+                  <span>Rs. {order.deliveryFee || 0}</span>
+                </div>
+                <div className="border-t mt-3 pt-3 font-bold flex justify-between">
+                  <span>Total Paid:</span>
+                  <span>Rs. {order.totalAmount || 0}</span>
+                </div>
+                <p className="text-xs text-textSecondary mt-3">{orderType === 'delivery' ? `Delivery to: ${order.address}` : 'Pickup order'}</p>
               </div>
             </div>
           )}

@@ -2,54 +2,41 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Package, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import API from '../services/api';
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const isAuthenticated = () => {
-    return sessionStorage.getItem('adminAuth') === 'true';
-  };
+  const isAuthenticated = () => sessionStorage.getItem('adminToken') !== null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
-    setTimeout(() => {
-      const storedEmail = sessionStorage.getItem('adminEmail');
-      const storedPassword = sessionStorage.getItem('adminPassword');
-
-      if (!storedEmail && !storedPassword) {
-        sessionStorage.setItem('adminEmail', 'admin@superideal.com');
-        sessionStorage.setItem('adminPassword', 'admin123');
-      }
-
-      const validEmail = storedEmail || 'admin@superideal.com';
-      const validPassword = storedPassword || 'admin123';
-
-      if (email === validEmail && password === validPassword) {
-        sessionStorage.setItem('adminAuth', 'true');
-        navigate('/admin');
-      } else {
-        setError('Invalid email or password');
-      }
+    try {
+      const res = await API.post('/auth/login', { username, password });
+      const { token } = res.data;
+      sessionStorage.setItem('adminToken', token);
+      // Attach token to all future API requests
+      API.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      navigate('/admin');
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Invalid credentials');
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   };
 
-  if (isAuthenticated()) {
-    return <Navigate to="/admin" replace />;
-  }
+  if (isAuthenticated()) return <Navigate to="/admin" replace />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#111827] to-[#1f2937] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#cc1f1f] shadow-xl mb-4">
             <Package className="h-8 w-8 text-white" />
@@ -58,7 +45,6 @@ const AdminLogin = () => {
           <p className="text-gray-400 text-sm mt-1">Bakery Admin Panel</p>
         </div>
 
-        {/* Login Card */}
         <div className="bg-white rounded-3xl shadow-2xl p-8">
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-gray-800">Welcome back</h2>
@@ -67,12 +53,12 @@ const AdminLogin = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Username</label>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@superideal.com"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="admin"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#cc1f1f] focus:border-transparent transition text-sm"
                 required
               />
@@ -113,17 +99,10 @@ const AdminLogin = () => {
               {loading ? (
                 <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <>
-                  Sign In
-                  <ArrowRight size={18} />
-                </>
+                <>Sign In <ArrowRight size={18} /></>
               )}
             </button>
           </form>
-
-          <p className="text-center text-xs text-gray-400 mt-6">
-            Demo credentials will be pre-filled on first visit
-          </p>
         </div>
       </div>
     </div>

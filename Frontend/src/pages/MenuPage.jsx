@@ -2,7 +2,7 @@ import { useState } from "react";
 import useProducts from "../hooks/useProducts";
 import ProductCard from "../components/ProductCard";
 import CategoryFilter from "../components/CategoryFilter";
-import { useCart } from "../context/CartContext";
+import useCart from "../context/useCart";
 import "../menu.css";
 
 const CATEGORIES = ["All", "Donuts", "Cookies", "Breads", "Cakes", "Pastries"];

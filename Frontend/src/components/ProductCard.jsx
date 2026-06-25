@@ -1,17 +1,18 @@
 // src/components/ProductCard.jsx
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
-import { useCart } from '../context/CartContext';
+import useCart from '../context/useCart';
 import { useState, useEffect, useRef } from 'react';
 
 const ProductCard = ({ product }) => {
-  const { addToCart, showAddedToast, lastAddedItem, flyCart, setShowAddedToast } = useCart();
+  const { addToCart, showAddedToast, lastAddedItem, flyCart, setShowAddedToast, setFlyCart } = useCart();
   const [showSizeModal, setShowSizeModal] = useState(false);
   const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const addBtnRef = useRef(null);
   
-  const hasSizes = product.sizePriceMap && Object.keys(product.sizePriceMap).some(s => product.sizePriceMap[s]);
-  const availableSizes = hasSizes ? Object.keys(product.sizePriceMap).filter(s => product.sizePriceMap[s]) : [];
+  const sizePriceMap = product.sizePriceMap || (product.sizes ? product.sizes.reduce((map, size) => ({ ...map, [size.label]: size.price }), {}) : null);
+  const hasSizes = sizePriceMap && Object.keys(sizePriceMap).some((s) => sizePriceMap[s]);
+  const availableSizes = hasSizes ? Object.keys(sizePriceMap).filter((s) => sizePriceMap[s]) : [];
 
   useEffect(() => {
     if (showAddedToast && flyCart && addBtnRef.current) {
@@ -53,30 +54,33 @@ const ProductCard = ({ product }) => {
       });
       
       setTimeout(() => {
-        try { document.body.removeChild(flyImg); } catch(e) {}
+        try {
+          document.body.removeChild(flyImg);
+        } catch (cleanupError) {
+          console.warn('fly animation cleanup failed', cleanupError);
+        }
         setShowAddedToast(false);
         setFlyCart(null);
       }, 500);
     }
-  }, [showAddedToast, flyCart, setShowAddedToast]);
+  }, [showAddedToast, flyCart, setShowAddedToast, setFlyCart]);
 
-  const handleAddToCart = () => {
-    if (hasSizes && availableSizes.length > 0) {
-      setShowSizeModal(true);
-      setSelectedSize(null);
-      setQuantity(1);
-    } else {
-      addToCart(product, null, 1);
-    }
-  };
+const productId = product._id || product.id;
 
-  const handleAddWithSize = () => {
-    if (!selectedSize) return;
-    addToCart(product, selectedSize, quantity);
-    setShowSizeModal(false);
+const handleAddToCart = () => {
+  if (hasSizes && availableSizes.length > 0) {
+    setShowSizeModal(true);
     setSelectedSize(null);
     setQuantity(1);
-  };
+  } else {
+    addToCart({ ...product, _id: productId, id: productId }, null, 1);
+  }
+};
+
+const handleAddWithSize = () => {
+  if (!selectedSize) return;
+  addToCart({ ...product, _id: productId, id: productId }, selectedSize, quantity);
+}
 
   return (
     <>
@@ -127,7 +131,7 @@ const ProductCard = ({ product }) => {
             <>
               <div className="flex items-center justify-between mb-4">
                 <span className="text-textSecondary">Price:</span>
-                <span className="text-xl font-bold">Rs. {product.sizePriceMap[selectedSize]}</span>
+                <span className="text-xl font-bold">Rs. {sizePriceMap[selectedSize]}</span>
               </div>
               
               <div className="flex items-center justify-center gap-4 mb-5">
