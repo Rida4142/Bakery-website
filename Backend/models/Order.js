@@ -16,6 +16,11 @@ const orderSchema = new mongoose.Schema(
     phone: { type: String, required: true },
     email: { type: String },
     address: { type: String },
+    notes: { type: String },
+    orderType: { type: String, enum: ['pickup', 'delivery'], default: 'pickup' },
+    deliveryDistance: { type: Number, default: 0 },
+    deliveryFee: { type: Number, default: 0 },
+    subtotal: { type: Number, default: 0 },
     items: [orderItemSchema],
     totalAmount: { type: Number, required: true },
     status: {

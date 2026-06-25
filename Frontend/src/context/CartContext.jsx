@@ -1,9 +1,7 @@
 // src/context/CartContext.jsx
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 
 const CartContext = createContext();
-
-export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(() => {
@@ -18,11 +16,15 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
+  const getItemId = (item) => item.id || item._id;
+
   const addToCart = (product, selectedSize = null, quantity = 1) => {
-    let price = selectedSize ? product.sizePriceMap?.[selectedSize] : product.price;
+    const normalizedId = product.id || product._id;
+    const sizePriceMap = product.sizePriceMap || (product.sizes ? product.sizes.reduce((map, size) => ({ ...map, [size.label]: size.price }), {}) : null);
+    let price = selectedSize ? sizePriceMap?.[selectedSize] : product.price;
     setCartItems(prevItems => {
       const existingItemIndex = prevItems.findIndex(item => 
-        item.id === product.id && item.selectedSize === selectedSize
+        getItemId(item) === normalizedId && item.selectedSize === selectedSize
       );
 
       if (existingItemIndex !== -1) {
@@ -35,6 +37,7 @@ export const CartProvider = ({ children }) => {
       } else {
         return [...prevItems, { 
           ...product, 
+          id: normalizedId,
           quantity,
           selectedSize: selectedSize,
           price,
@@ -55,14 +58,14 @@ export const CartProvider = ({ children }) => {
 
   const removeFromCart = (id, selectedSize) => {
     setCartItems(prevItems => prevItems.filter(item => 
-      !(item.id === id && item.selectedSize === selectedSize)
+      !(getItemId(item) === id && item.selectedSize === selectedSize)
     ));
   };
 
   const updateQuantity = (id, selectedSize, newQuantity) => {
     if (newQuantity < 1) return;
     setCartItems(prevItems => prevItems.map(item =>
-      item.id === id && item.selectedSize === selectedSize
+      getItemId(item) === id && item.selectedSize === selectedSize
         ? { ...item, quantity: newQuantity }
         : item
     ));
@@ -97,6 +100,15 @@ export const CartProvider = ({ children }) => {
       {children}
     </CartContext.Provider>
   );
+};
+
+// 🔥 Added this custom hook – this is what your components import
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
 };
 
 export default CartContext;

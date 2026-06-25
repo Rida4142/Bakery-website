@@ -1,13 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { getOrders } from '../../services/orderService';
 
 export default function RecentOrdersTable() {
-  const [orders, setOrders] = useState([]);
-  useEffect(() => {
-    const allOrders = getOrders().slice(0, 5);
-    setOrders(allOrders);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const allOrders = getOrders();
+  const recentOrders = Array.isArray(allOrders) ? allOrders.slice(0, 5) : [];
+  const [orders] = useState(recentOrders);
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm">
       <h3 className="font-semibold mb-4">Recent Orders</h3>

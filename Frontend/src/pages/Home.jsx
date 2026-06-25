@@ -1,12 +1,29 @@
 // src/pages/Home.jsx
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, Heart, Truck, Award, ArrowRight } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import { products, categories } from '../data/products';
+import { getProducts } from '../services/api';
+import { categories } from '../data/products';
 
 const Home = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getProducts()
+      .then(res => setProducts(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false));
+  }, []);
+
   const featuredProducts = products.slice(0, 8);
-  const specialOffers = products.filter(p => p.category === 'Cakes').slice(0, 3);
+  const specialOffers = products
+    .filter(p => {
+      const catName = (p.categoryId?.name || p.category || '').toLowerCase();
+      return catName === 'cakes';
+    })
+    .slice(0, 3);
 
   const whyChooseUs = [
     { icon: <Heart className="h-8 w-8 text-primary" />, title: 'Fresh Ingredients', desc: 'Daily sourced premium quality ingredients' },
@@ -41,7 +58,7 @@ const Home = () => {
               </div>
             </div>
             <div className="flex-1">
-              <img 
+              <img
                 src="assets/Homepage.jpg"
                 alt="Fresh Bakery"
                 className="rounded-3xl shadow-xl object-cover w-full h-80 md:h-96"
@@ -56,16 +73,18 @@ const Home = () => {
         <div className="container-custom">
           <h2 className="text-3xl font-bold text-center mb-8">Shop by Category</h2>
           <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
-            {categories.filter(c => c.id !== 'all').map(cat => (
-              <Link 
-                key={cat.id} 
-                to={`/menu?category=${cat.id}`}
-                className="flex-shrink-0 flex flex-col items-center bg-white rounded-2xl p-4 w-24 shadow-sm hover:shadow-md transition"
-              >
-                <span className="text-3xl mb-2">{cat.icon}</span>
-                <span className="text-sm font-medium text-center">{cat.name}</span>
-              </Link>
-            ))}
+            {categories
+              .filter(c => c.id !== 'all')
+              .map(cat => (
+                <Link
+                  key={cat.id}
+                  to={`/menu?category=${cat.id}`}
+                  className="flex-shrink-0 flex flex-col items-center bg-white rounded-2xl p-4 w-24 shadow-sm hover:shadow-md transition"
+                >
+                  <span className="text-3xl mb-2">{cat.icon}</span>
+                  <span className="text-sm font-medium text-center">{cat.name}</span>
+                </Link>
+              ))}
           </div>
         </div>
       </section>
@@ -74,11 +93,17 @@ const Home = () => {
       <section className="py-12 bg-white">
         <div className="container-custom">
           <h2 className="text-3xl font-bold text-center mb-8">Featured Delights</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {loading ? (
+            <p className="text-center text-textSecondary py-8">Loading...</p>
+          ) : featuredProducts.length === 0 ? (
+            <p className="text-center text-textSecondary py-8">No products available.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredProducts.map(product => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          )}
           <div className="text-center mt-10">
             <Link to="/menu" className="btn-primary inline-flex items-center gap-2">
               View Full Menu <ArrowRight className="h-4 w-4" />
@@ -110,7 +135,10 @@ const Home = () => {
             <span className="bg-white/20 px-3 py-1 rounded-full text-sm inline-block mb-4">Weekend Special</span>
             <h2 className="text-3xl md:text-4xl font-bold mb-2">20% OFF on Celebration Cakes</h2>
             <p className="mb-6 opacity-90">Use code: SWEET20 at checkout</p>
-            <Link to="/menu?category=Cakes" className="bg-white text-primary hover:bg-gray-100 font-semibold py-2 px-6 rounded-xl inline-block transition">
+            <Link
+              to="/menu?category=Cakes"
+              className="bg-white text-primary hover:bg-gray-100 font-semibold py-2 px-6 rounded-xl inline-block transition"
+            >
               Order Now
             </Link>
           </div>
@@ -121,11 +149,15 @@ const Home = () => {
       <section className="py-12 bg-white">
         <div className="container-custom">
           <h2 className="text-3xl font-bold text-center mb-8">Customer Favorites</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {specialOffers.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {specialOffers.length === 0 ? (
+            <p className="text-center text-textSecondary py-4">No cake products found.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {specialOffers.map(product => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -161,7 +193,7 @@ const Home = () => {
               </div>
             </div>
             <div className="bg-gray-200 rounded-3xl h-64 overflow-hidden">
-              <img 
+              <img
                 src="https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=600&h=400&fit=crop"
                 alt="Bakery location"
                 className="w-full h-full object-cover"

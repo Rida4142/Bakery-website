@@ -13,7 +13,7 @@ import Orders from './pages/Orders';
 import AdminProducts from './pages/AdminProducts';
 
 const AuthGuard = ({ children }) => {
-  const isAuth = sessionStorage.getItem('adminAuth') === 'true';
+  const isAuth = sessionStorage.getItem('adminToken') !== null;
   return isAuth ? children : <Navigate to="/admin/login" replace />;
 };
 

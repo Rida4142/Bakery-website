@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, ArrowLeft, Truck, Store } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useState, useMemo } from 'react';
-import { saveOrder } from '../services/orderService';
+import { createOrder } from '../services/api';
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
@@ -49,18 +49,7 @@ const Cart = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const sendWhatsAppOrder = (order) => {
-    const phoneNumber = '923416401994';
-    const itemsList = order.items.map(item => 
-      `${item.name} x${item.quantity} = Rs.${item.price * item.quantity}`
-    ).join('%0A');
-    const typeText = order.orderType === 'delivery' ? `Delivery Distance: ${order.deliveryDistance} km%0A` : '';
-    const message = `*New Order #${order.id}*%0A%0A*Type:* ${order.orderType.toUpperCase()}%0A${typeText}*Customer:* ${order.customer.customerName}%0A*Phone:* ${order.customer.phone}%0A${order.orderType === 'delivery' ? `*Address:* ${order.customer.address}%0A` : ''}*Notes:* ${order.customer.notes || 'None'}%0A%0A*Items:*%0A${itemsList}%0A%0A*Subtotal:* Rs.${order.subtotal}%0A*Delivery Fee:* Rs.${order.deliveryFee}%0A*Total:* Rs.${order.total}%0A%0AThank you!`;
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
-    window.open(whatsappUrl, '_blank');
-  };
-
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (!formData.customerName || !formData.phone) {
       alert('Please fill all required fields');
       return;
@@ -70,32 +59,41 @@ const Cart = () => {
       return;
     }
 
-    const orderData = {
-      customer: formData,
-      items: cartItems.map(item => ({
-        id: item.id,
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price,
-        selectedSize: item.selectedSize || null,
-      })),
+    const payload = {
+      customerName: formData.customerName,
+      phone: formData.phone,
+      email: formData.email || '',
+      address: orderType === 'delivery' ? formData.address : '',
+    items: cartItems.map(item => ({
+  productId: item._id || item.id,
+  size: item.selectedSize || null,
+  quantity: item.quantity,
+})),
       orderType,
       deliveryDistance: orderType === 'delivery' ? Number(deliveryDistance) : 0,
-      subtotal,
       deliveryFee,
-      total: grandTotal,
     };
+    
 
-    const newOrder = saveOrder(orderData);
-    setOrderId(newOrder.id);
-    setOrderPlaced(true);
-    clearCart();
-    sendWhatsAppOrder(newOrder);
+    try {
+      const response = await createOrder(payload);
+      const { orderNumber, whatsappLink } = response.data;
+      setOrderId(orderNumber);
+      setOrderPlaced(true);
+      clearCart();
+      if (whatsappLink) {
+        window.open(whatsappLink, '_blank');
+      }
+    } catch (error) {
+      const message = error?.response?.data?.message || 'Unable to place order. Please try again.';
+      setError(message);
+    }
   };
 
   const handleTrackOrder = () => {
     navigate(`/track-order?id=${orderId}`);
   };
+
 
   if (orderPlaced) {
     return (

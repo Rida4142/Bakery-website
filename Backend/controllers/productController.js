@@ -1,10 +1,23 @@
+const mongoose = require('mongoose');
 const Product = require('../models/Product');
+const Category = require('../models/Category');
 
 // GET /api/products — public, returns available products grouped usably
 const getProducts = async (req, res) => {
   try {
     const filter = { available: true };
-    if (req.query.category) filter.categoryId = req.query.category;
+    if (req.query.category) {
+      if (mongoose.isValidObjectId(req.query.category)) {
+        filter.categoryId = req.query.category;
+      } else {
+        const category = await Category.findOne({ name: req.query.category, active: true });
+        if (category) {
+          filter.categoryId = category._id;
+        } else {
+          return res.json([]);
+        }
+      }
+    }
 
     const products = await Product.find(filter)
       .populate('categoryId', 'name sortOrder')
