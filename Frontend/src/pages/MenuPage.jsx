@@ -1,17 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useProducts from "../hooks/useProducts";
 import ProductCard from "../components/ProductCard";
 import CategoryFilter from "../components/CategoryFilter";
-import useCart from "../context/useCart";
+import { useCart } from "../context/CartContext";
+import { getCategories } from "../services/api";
 import "../menu.css";
-
-const CATEGORIES = ["All", "Donuts", "Cookies", "Breads", "Cakes", "Pastries"];
 
 const MenuPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [categories, setCategories] = useState(["All", "Donuts", "Cookies", "Breads", "Cakes", "Pastries"]);
   const { getCartCount } = useCart();
   const cartCount = getCartCount();
   const { products, loading, error } = useProducts(selectedCategory);
+
+  useEffect(() => {
+    getCategories()
+      .then(res => {
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          setCategories(["All", ...res.data.map(c => c.name)]);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="menu-page">
@@ -63,7 +73,7 @@ const MenuPage = () => {
             <button className="menu-see-all">SEE ALL</button>
           </div>
           <CategoryFilter
-            categories={CATEGORIES}
+            categories={categories}
             selected={selectedCategory}
             onSelect={setSelectedCategory}
           />

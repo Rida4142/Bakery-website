@@ -21,10 +21,10 @@ export default function OrdersChart() {
 
       {/* Bar Chart using CSS */}
       <div className="space-y-4">
-        {mockOrdersData.map((item, index) => {
+{mockOrdersData.map((item) => {
           const percentage = (item.orders / maxValue) * 100
           return (
-            <div key={index}>
+            <div key={item.date}>
               <div className="flex justify-between mb-2">
                 <span className="text-sm font-medium" style={{ color: '#6B7280' }}>
                   {item.date}

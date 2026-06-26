@@ -1,6 +1,5 @@
-// src/components/ProductCard.jsx
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
-import useCart from '../context/useCart';
+import { useCart } from '../context/CartContext';
 import { useState, useEffect, useRef } from 'react';
 
 const ProductCard = ({ product }) => {

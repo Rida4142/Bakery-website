@@ -1,21 +1,21 @@
 // src/pages/AdminProducts.jsx
 import { useEffect, useState } from 'react';
 import AdminLayout from '../layouts/AdminLayout';
-import API from '../services/api';
-import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiX, FiSave, FiRefreshCw } from 'react-icons/fi';
+import API, { getAdminCategories, uploadImage } from '../services/api';
+import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiX, FiSave, FiRefreshCw, FiUpload } from 'react-icons/fi';
 
 const DEFAULT_FORM = {
   name: '',
   description: '',
   image: '',
   price: '',
-  sizes: '',
+  sizes: [{ label: '', price: '' }],
   available: true,
   categoryId: '',
-  hasSizes: false,
+  hasSizes: true,
 };
 
-export default function AdminProducts() {
+const AdminProducts = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
@@ -24,6 +24,7 @@ export default function AdminProducts() {
   const [formData, setFormData] = useState(DEFAULT_FORM);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState('');
 
   // ---- Load products & categories from API ----
@@ -33,12 +34,12 @@ export default function AdminProducts() {
     try {
       const [prodRes, catRes] = await Promise.all([
         API.get('/admin/products'),
-        API.get('/admin/categories'),
+        getAdminCategories(),
       ]);
       setProducts(prodRes.data || []);
       setCategories(catRes.data || []);
     } catch (err) {
-      setError('Failed to load data. Please refresh.');
+      setError('Failed to load data. Please login first.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -67,7 +68,7 @@ export default function AdminProducts() {
       description: product.description || '',
       image: product.image || '',
       price: product.price || '',
-      sizes: hasSizes ? JSON.stringify(product.sizes) : '',
+      sizes: hasSizes ? product.sizes.map(s => ({ label: s.label, price: s.price })) : [{ label: '', price: '' }],
       available: product.available !== false,
       categoryId: product.categoryId?._id || product.categoryId || '',
       hasSizes,
@@ -90,14 +91,16 @@ export default function AdminProducts() {
       };
 
       if (formData.hasSizes) {
-        try {
-          payload.sizes = JSON.parse(formData.sizes);
-          payload.price = undefined;
-        } catch {
-          alert('Invalid sizes JSON. Format: [{"label":"S","price":750},{"label":"M","price":1100}]');
+        const validSizes = formData.sizes
+          .filter(s => s.label && s.price)
+          .map(s => ({ label: s.label, price: Number(s.price) }));
+        if (validSizes.length === 0) {
+          alert('Please add at least one size with label and price');
           setSaving(false);
           return;
         }
+        payload.sizes = validSizes;
+        payload.price = undefined;
       } else {
         payload.price = Number(formData.price);
         payload.sizes = [];
@@ -115,6 +118,21 @@ export default function AdminProducts() {
       setError(err?.response?.data?.message || 'Failed to save product');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // ---- Image Upload ----
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingImage(true);
+    try {
+      const response = await uploadImage(file);
+      setFormData({ ...formData, image: response.data.url });
+    } catch (err) {
+      alert('Upload failed');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -305,27 +323,40 @@ export default function AdminProducts() {
                   </select>
                 </div>
 
-                {/* Image */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                  <input
-                    type="url"
-                    value={formData.image}
-                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                    placeholder="https://..."
-                    className="input-field"
-                  />
-                  {formData.image && (
-                    <div className="mt-2 w-32 h-32 rounded-xl overflow-hidden bg-gray-100">
-                      <img
-                        src={formData.image}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
-                        onError={(e) => { e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2ViZWRiZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjOWNhM2FmIiBmb250LXNpemU9IjkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5QcmV2aWV3IGZhaWxlZDwvdGV4dD48L3N2Zz4='; }}
-                      />
-                    </div>
-                  )}
-                </div>
+{/* Image */}
+                 <div className="md:col-span-2">
+                   <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+                   <div className="flex gap-2">
+                     <input
+                       type="url"
+                       value={formData.image}
+                       onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                       placeholder="https://... or upload below"
+                       className="input-field flex-1"
+                     />
+                     <label className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
+                       <FiUpload size={16} />
+                       <span className="text-sm">Upload</span>
+                       <input
+                         type="file"
+                         accept="image/*"
+                         onChange={handleImageUpload}
+                         className="hidden"
+                       />
+                     </label>
+                   </div>
+                   {uploadingImage && <p className="text-xs text-blue-600 mt-1">Uploading image...</p>}
+                   {formData.image && (
+                     <div className="mt-2 w-32 h-32 rounded-xl overflow-hidden bg-gray-100">
+                       <img
+                         src={formData.image}
+                         alt="Preview"
+                         className="w-full h-full object-cover"
+                         onError={(e) => { e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2ViZWRiZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjOWNhM2FmIiBmb250LXNpemU9IjkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5QcmV2aWV3IGZhaWxlZDwvdGV4dD48L3N2Zz4='; }}
+                       />
+                     </div>
+                   )}
+                 </div>
 
                 {/* Description */}
                 <div className="md:col-span-2">
@@ -351,33 +382,74 @@ export default function AdminProducts() {
                   </label>
                 </div>
 
-                {/* Price or Sizes JSON */}
-                {formData.hasSizes ? (
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Sizes (JSON) *</label>
-                    <textarea
-                      rows={4}
-                      required
-                      value={formData.sizes}
-                      onChange={(e) => setFormData({ ...formData, sizes: e.target.value })}
-                      placeholder='[{"label":"S","price":750},{"label":"M","price":1100}]'
-                      className="input-field font-mono text-xs"
-                    />
-                    <p className="text-xs text-gray-400 mt-1">Array of objects with "label" and "price"</p>
-                  </div>
-                ) : (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (Rs.) *</label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      className="input-field"
-                    />
-                  </div>
-                )}
+{/* Size/Price inputs */}
+                 {formData.hasSizes ? (
+                   <div className="md:col-span-2">
+                     <label className="block text-sm font-medium text-gray-700 mb-2">Sizes *</label>
+                     <div className="space-y-2">
+                       {formData.sizes.map((size, index) => (
+                         <div key={index} className="flex gap-2">
+<input
+                              type="text"
+                              name={`size-label-${index}`}
+                              id={`size-label-${index}`}
+                              placeholder="Label (e.g., S)"
+                              value={size.label}
+                              onChange={(e) => {
+                                const newSizes = [...formData.sizes];
+                                newSizes[index] = { ...newSizes[index], label: e.target.value.toUpperCase() };
+                                setFormData({ ...formData, sizes: newSizes });
+                              }}
+                              className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#cc1f1f] focus:border-transparent"
+                            />
+                            <input
+                              type="number"
+                              name={`size-price-${index}`}
+                              id={`size-price-${index}`}
+                              placeholder="Price"
+                              min="0"
+                              value={size.price}
+                              onChange={(e) => {
+                                const newSizes = [...formData.sizes];
+                                newSizes[index] = { ...newSizes[index], price: e.target.value };
+                                setFormData({ ...formData, sizes: newSizes });
+                              }}
+                              className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#cc1f1f] focus:border-transparent"
+                            />
+                           <button
+                             type="button"
+                             onClick={() => {
+                               setFormData({ ...formData, sizes: formData.sizes.filter((_, i) => i !== index) });
+                             }}
+                             className="p-2 rounded-lg text-red-600 hover:bg-red-50"
+                             disabled={formData.sizes.length <= 1}
+                           >
+                             <FiX size={16} />
+                           </button>
+                         </div>
+                       ))}
+                       <button
+                         type="button"
+                         onClick={() => setFormData({ ...formData, sizes: [...formData.sizes, { label: '', price: '' }] })}
+                         className="flex items-center gap-1 px-3 py-1.5 text-xs text-[#cc1f1f] border border-[#cc1f1f] rounded-lg hover:bg-red-50 mt-1"
+                       >
+                         <FiPlus size={14} /> Add Size
+                       </button>
+                     </div>
+                   </div>
+                 ) : (
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Price (Rs.) *</label>
+                     <input
+                       type="number"
+                       required
+                       min="0"
+                       value={formData.price}
+                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                       className="input-field"
+                     />
+                   </div>
+                 )}
 
                 {/* Available checkbox */}
                 <div className="md:col-span-2">
@@ -415,6 +487,8 @@ export default function AdminProducts() {
           </div>
         </div>
       )}
-    </AdminLayout>
-  );
+</AdminLayout>
+   );
 }
+
+export default AdminProducts;

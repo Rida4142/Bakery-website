@@ -56,12 +56,12 @@ export default function SalesHistory() {
               </tr>
             </thead>
             <tbody>
-              {salesHistory.map((entry, index) => (
-                <tr
-                  key={index}
-                  style={{ borderBottom: '1px solid #E5E7EB' }}
-                  className="hover:bg-gray-50 transition"
-                >
+{salesHistory.map((entry) => (
+                 <tr
+                   key={entry.date}
+                   style={{ borderBottom: '1px solid #E5E7EB' }}
+                   className="hover:bg-gray-50 transition"
+                 >
                   <td className="px-6 py-4 text-sm font-semibold" style={{ color: '#1F2937' }}>
                     {entry.date}
                   </td>

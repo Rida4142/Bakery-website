@@ -26,13 +26,13 @@ export default function TopProductsCard() {
         <p className="text-sm text-red-500">{error}</p>
       ) : (
         <ul className="space-y-3">
-          {topProducts.map(({ name, count }) => (
-            <li key={name} className="flex justify-between">
-              <span className="text-sm">{name}</span>
-              <span className="font-medium">{count} sold</span>
+{topProducts.map((product, idx) => (
+            <li key={`${product.name || 'unknown'}-${idx}`} className="flex justify-between">
+              <span className="text-sm">{product.name}</span>
+              <span className="font-medium">{product.count} sold</span>
             </li>
           ))}
-        </ul>
+         </ul>
       )}
     </div>
   );

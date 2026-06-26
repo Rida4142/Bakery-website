@@ -1,5 +1,5 @@
 // src/layouts/AdminLayout.jsx
-import { Link } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { LayoutDashboard, ShoppingBag, TrendingUp, Settings, LogOut, Users, FileText, Package, Menu, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -85,7 +85,7 @@ export default function AdminLayout({ children }) {
           </p>
           <div className="space-y-1.5 mb-6">
             {navItems.map(({ path, icon: Icon, label }) => (
-              <Link
+              <NavLink
                 key={path}
                 to={path}
                 onClick={() => setIsMobileOpen(false)}
@@ -101,7 +101,7 @@ export default function AdminLayout({ children }) {
                   <Icon size={16} className="flex-shrink-0" />
                   {!isCollapsed && <span className="truncate">{label}</span>}
                 </div>
-              </Link>
+              </NavLink>
             ))}
           </div>
 
@@ -111,7 +111,7 @@ export default function AdminLayout({ children }) {
             </p>
             <div className="space-y-1.5">
               {secondaryItems.map(({ path, icon: Icon, label }) => (
-                <Link
+                <NavLink
                   key={path}
                   to={path}
                   onClick={() => setIsMobileOpen(false)}
@@ -127,7 +127,7 @@ export default function AdminLayout({ children }) {
                     <Icon size={16} className="flex-shrink-0" />
                     {!isCollapsed && <span className="truncate">{label}</span>}
                   </div>
-                </Link>
+                </NavLink>
               ))}
             </div>
           </div>
@@ -191,7 +191,7 @@ export default function AdminLayout({ children }) {
           <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest px-3 mb-3">Main</p>
           <div className="space-y-1.5 mb-6">
             {navItems.map(({ path, icon: Icon, label }) => (
-              <Link
+              <NavLink
                 key={path}
                 to={path}
                 onClick={() => setIsMobileOpen(false)}
@@ -203,14 +203,14 @@ export default function AdminLayout({ children }) {
               >
                 <Icon size={16} />
                 <span className="truncate">{label}</span>
-              </Link>
+              </NavLink>
             ))}
           </div>
           <div className="border-t border-gray-800/60 pt-5">
             <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest px-3 mb-3">Management</p>
             <div className="space-y-1.5">
               {secondaryItems.map(({ path, icon: Icon, label }) => (
-                <Link
+                <NavLink
                   key={path}
                   to={path}
                   onClick={() => setIsMobileOpen(false)}
@@ -222,7 +222,7 @@ export default function AdminLayout({ children }) {
                 >
                   <Icon size={16} />
                   <span className="truncate">{label}</span>
-                </Link>
+                </NavLink>
               ))}
             </div>
           </div>

@@ -26,10 +26,19 @@ API.interceptors.response.use(
   }
 );
 
-export const getProducts = () => API.get("/menu/products");
-export const getProductsByCategory = (category) => API.get(`/menu/products?category=${category}`);
+export const getProducts = () => API.get("/products");
+export const getProductsByCategory = (category) => API.get(`/products?category=${category}`);
+export const getCategories = () => API.get("/categories");
+export const getAdminCategories = () => API.get("/admin/categories");
 export const createOrder = (orderData) => API.post("/orders", orderData);
 export const getOrderByNumber = (orderNumber) => API.get(`/orders/track/${orderNumber}`);
 export const getTopProducts = () => API.get("/admin/reports/top-products");
+export const uploadImage = (file) => {
+  const form = new FormData();
+  form.append("image", file);
+  return API.post("/admin/upload", form, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
+};
 
 export default API;

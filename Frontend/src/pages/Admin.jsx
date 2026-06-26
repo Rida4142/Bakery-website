@@ -1,4 +1,3 @@
-// src/pages/Admin.jsx
 import { useEffect, useState } from 'react';
 import AdminLayout from '../layouts/AdminLayout';
 import DashboardCard from '../components/Admin/DashboardCard';
@@ -12,7 +11,6 @@ const REFRESH_INTERVAL = 15000;
 export default function Admin() {
   const [stats, setStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
-  const [topProducts, setTopProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 

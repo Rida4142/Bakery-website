@@ -1,5 +1,5 @@
 // src/pages/Orders.jsx
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import AdminLayout from '../layouts/AdminLayout';
 import { getOrders, updateOrderStatus, getStatusColor, getOrderType } from '../services/orderService';
 import { FiSearch, FiChevronDown, FiChevronUp, FiRefreshCw } from 'react-icons/fi';
@@ -145,8 +145,8 @@ export default function Orders() {
                   <td colSpan={8} className="py-12 text-center text-gray-400">No orders found</td>
                 </tr>
               ) : filteredOrders.map(order => (
-                <>
-                  <tr key={order._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
+                <React.Fragment key={order._id}>
+                  <tr className="border-b border-gray-50 hover:bg-gray-50/50 transition">
                     <td className="py-4 px-6 font-medium text-gray-800">#{order.orderNumber}</td>
                     <td className="py-4 px-6 text-gray-700">{order.customerName || 'Guest'}</td>
                     <td className="py-4 px-6 text-gray-500">{order.phone}</td>
@@ -187,7 +187,7 @@ export default function Orders() {
                   </tr>
 
                   {expandedOrder === order._id && (
-                    <tr key={`${order._id}-expanded`} className="bg-gray-50/50">
+                    <tr className="bg-gray-50/50">
                       <td colSpan={8} className="px-6 py-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div>
@@ -209,7 +209,7 @@ export default function Orders() {
                             <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Order Items</p>
                             <div className="space-y-2">
                               {order.items?.map((item, i) => (
-                                <div key={i} className="flex justify-between text-sm">
+                                <div key={`${item.productId || item.name || 'item'}-${i}`} className="flex justify-between text-sm">
                                   <span className="text-gray-700">
                                     {item.name} {item.size ? `(${item.size})` : ''} x{item.quantity}
                                   </span>
@@ -236,7 +236,7 @@ export default function Orders() {
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>

@@ -92,16 +92,15 @@ export default function Reports() {
           Best Selling Products
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[
-            { name: 'Chocolate Croissant', sold: '456 units', revenue: '$2,280' },
-            { name: 'Sourdough Bread', sold: '389 units', revenue: '$1,945' },
-            { name: 'Danish Pastry', sold: '342 units', revenue: '$2,052' }
-          ].map((product, index) => (
-            <div
-              key={index}
-              className="p-4 rounded-lg border"
-              style={{ backgroundColor: '#FFF8F5', borderColor: '#E5E7EB' }}
-            >
+{[
+             { name: 'Chocolate Croissant', sold: '456 units', revenue: '$2,280' },
+             { name: 'Sourdough Bread', sold: '389 units', revenue: '$1,945' },
+             { name: 'Danish Pastry', sold: '342 units', revenue: '$2,052' }
+           ].map((product) => (
+             <div
+               key={product.name}
+               className="p-4 rounded-lg border"
+             >
               <p className="font-semibold mb-1" style={{ color: '#1F2937' }}>
                 {product.name}
               </p>

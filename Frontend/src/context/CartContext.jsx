@@ -95,6 +95,7 @@ export const CartProvider = ({ children }) => {
       lastAddedItem,
       showAddedToast,
       setShowAddedToast,
+      setFlyCart,
       flyCart,
     }}>
       {children}
