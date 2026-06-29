@@ -3,12 +3,15 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, Heart, Truck, Award, ArrowRight } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import { useBakery } from '../context/BakeryContext';
+import { useCategories } from '../hooks/useProducts';
 import { getProducts } from '../services/api';
-import { categories } from '../data/products';
 
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { bakery } = useBakery();
+  const { categories } = useCategories();
 
   useEffect(() => {
     getProducts()
@@ -26,10 +29,10 @@ const Home = () => {
     .slice(0, 3);
 
   const whyChooseUs = [
-    { icon: <Heart className="h-8 w-8 text-primary" />, title: 'Fresh Ingredients', desc: 'Daily sourced premium quality ingredients' },
-    { icon: <Award className="h-8 w-8 text-primary" />, title: 'Custom Cakes', desc: 'Made just the way you want' },
-    { icon: <Truck className="h-8 w-8 text-primary" />, title: 'Fast Delivery', desc: 'Hot & fresh at your doorstep' },
-    { icon: <Clock className="h-8 w-8 text-primary" />, title: 'Made With Love', desc: 'Traditional recipes with care' },
+    { icon: <Heart className="h-8 w-8 text-brand-primary" />, title: 'Fresh Ingredients', desc: 'Daily sourced premium quality ingredients' },
+    { icon: <Award className="h-8 w-8 text-brand-primary" />, title: 'Custom Cakes', desc: 'Made just the way you want' },
+    { icon: <Truck className="h-8 w-8 text-brand-primary" />, title: 'Fast Delivery', desc: 'Hot & fresh at your doorstep' },
+    { icon: <Clock className="h-8 w-8 text-brand-primary" />, title: 'Made With Love', desc: 'Traditional recipes with care' },
   ];
 
   const steps = [
@@ -42,12 +45,12 @@ const Home = () => {
   return (
     <main>
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-background to-secondary/20 pt-10 pb-16">
+      <section className="bg-gradient-to-br from-background to-brand-secondary/20 pt-10 pb-16">
         <div className="container-custom">
           <div className="flex flex-col md:flex-row items-center justify-between gap-12">
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                Freshly Baked <span className="text-primary">Happiness</span> Every Day
+                Freshly Baked <span className="text-brand-primary">Happiness</span> Every Day
               </h1>
               <p className="text-textSecondary text-lg mt-4 max-w-lg mx-auto md:mx-0">
                 Handcrafted cakes, cookies, donuts and breads made with premium ingredients.
@@ -131,13 +134,13 @@ const Home = () => {
       {/* Special Offer Banner */}
       <section className="py-12">
         <div className="container-custom">
-          <div className="bg-gradient-to-r from-primary to-primaryHover rounded-3xl p-8 md:p-12 text-white text-center">
+          <div className="bg-gradient-to-r from-brand-primary to-brand-accent rounded-3xl p-8 md:p-12 text-white text-center">
             <span className="bg-white/20 px-3 py-1 rounded-full text-sm inline-block mb-4">Weekend Special</span>
             <h2 className="text-3xl md:text-4xl font-bold mb-2">20% OFF on Celebration Cakes</h2>
             <p className="mb-6 opacity-90">Use code: SWEET20 at checkout</p>
             <Link
               to="/menu?category=Cakes"
-              className="bg-white text-primary hover:bg-gray-100 font-semibold py-2 px-6 rounded-xl inline-block transition"
+              className="bg-white text-brand-primary hover:bg-gray-100 font-semibold py-2 px-6 rounded-xl inline-block transition"
             >
               Order Now
             </Link>
@@ -168,7 +171,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {steps.map((step, idx) => (
               <div key={idx} className="text-center">
-                <div className="bg-secondary/20 text-primary w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                <div className="bg-brand-secondary/20 text-brand-primary w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
                   {step.num}
                 </div>
                 <h3 className="font-semibold text-lg">{step.title}</h3>
@@ -180,28 +183,36 @@ const Home = () => {
       </section>
 
       {/* Contact Section */}
-      <section className="py-12 bg-white">
-        <div className="container-custom">
-          <div className="grid md:grid-cols-2 gap-8">
-            <div>
-              <h2 className="text-3xl font-bold mb-4">Visit Our Bakery</h2>
-              <p className="text-textSecondary mb-6">Come and enjoy the aroma of fresh bakes!</p>
-              <div className="space-y-3">
-                <p className="flex items-center gap-2"><span className="font-medium">📍</span> 155/B Main Road Gulzar-e-Quaid, Rawalpindi</p>
-                <p className="flex items-center gap-2"><span className="font-medium">📞</span> 051-5955285 | 0333-9440084</p>
-                <p className="flex items-center gap-2"><span className="font-medium">⏰</span> 7:00 AM - 3:00 AM (Daily)</p>
+      {bakery && (
+        <section className="py-12 bg-white">
+          <div className="container-custom">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h2 className="text-3xl font-bold mb-4">Visit Our Bakery</h2>
+                <p className="text-textSecondary mb-6">Come and enjoy the aroma of fresh bakes!</p>
+                <div className="space-y-3">
+                  {bakery.address && (
+                    <p className="flex items-center gap-2"><span className="font-medium">📍</span> {bakery.address}</p>
+                  )}
+                  {bakery.phone && bakery.whatsappNumber && (
+                    <p className="flex items-center gap-2"><span className="font-medium">📞</span> {bakery.phone} | {bakery.whatsappNumber}</p>
+                  )}
+                  {bakery.settings?.openingHours && (
+                    <p className="flex items-center gap-2"><span className="font-medium">⏰</span> {bakery.settings.openingHours}</p>
+                  )}
+                </div>
+              </div>
+              <div className="bg-gray-200 rounded-3xl h-64 overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=600&h=400&fit=crop"
+                  alt="Bakery location"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
-            <div className="bg-gray-200 rounded-3xl h-64 overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=600&h=400&fit=crop"
-                alt="Bakery location"
-                className="w-full h-full object-cover"
-              />
-            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </main>
   );
 };

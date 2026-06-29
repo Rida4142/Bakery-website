@@ -1,37 +1,49 @@
+// src/components/HeroSection.jsx
+import { useBakery } from '../context/BakeryContext';
+
 const HeroSection = () => {
+  const { bakery } = useBakery();
+
+  if (!bakery?.settings?.showHeroBanner) {
+    return null;
+  }
+
+  const heroImage = bakery?.settings?.heroImage;
+  const heroHeading = bakery?.settings?.heroHeading || bakery?.bakeryName;
+  const heroSubheading = bakery?.settings?.heroSubheading;
+
+  const backgroundStyle = heroImage
+    ? { backgroundImage: `url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : {};
+
+  const backgroundClasses = heroImage
+    ? "bg-cover bg-center rounded-3xl p-8 text-white"
+    : "bg-brand-primary rounded-3xl p-8 text-white";
+
   return (
     <section className="mt-6">
-
       <div
-        className="
-        bg-gradient-to-r
-        from-primary
-        to-red-400
-        rounded-3xl
-        p-8
-        text-white
-        "
+        className={backgroundClasses}
+        style={backgroundStyle}
       >
-        <div className="space-y-4">
-
-          <span className="bg-white/20 px-4 py-1 rounded-full text-sm">
-            Fresh Daily
-          </span>
+        <div className="space-y-4 max-w-lg">
 
           <h1 className="text-4xl font-bold">
-            Freshly Baked Happiness Every Day
+            {heroHeading}
           </h1>
 
-          <p className="text-white/90">
-            Cakes, cookies, donuts and breads made with love and premium ingredients.
-          </p>
+          {heroSubheading && (
+            <p className="text-white/90">
+              {heroSubheading}
+            </p>
+          )}
 
           <div className="flex gap-3">
 
             <button
               className="
               bg-white
-              text-primary
+              text-brand-primary
               px-6
               py-3
               rounded-xl

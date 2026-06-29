@@ -1,4 +1,5 @@
-import { useLocation, Link } from 'react-router-dom'
+import { useBakery } from '../context/BakeryContext';
+import { Link, useLocation } from 'react-router-dom';
 import {
   FiHome,
   FiShoppingCart,
@@ -7,10 +8,11 @@ import {
   FiBarChart2,
   FiSettings,
   FiX
-} from 'react-icons/fi'
+} from 'react-icons/fi';
 
 export default function Sidebar({ open, setOpen }) {
-  const location = useLocation()
+  const { bakery } = useBakery();
+  const location = useLocation();
 
   const menuItems = [
     { name: 'Dashboard', icon: FiHome, path: '/admin' },
@@ -19,9 +21,9 @@ export default function Sidebar({ open, setOpen }) {
     { name: 'Sales History', icon: FiTrendingUp, path: '/admin/sales' },
     { name: 'Reports', icon: FiBarChart2, path: '/admin/reports' },
     { name: 'Settings', icon: FiSettings, path: '/admin/settings' }
-  ]
+  ];
 
-  const isActive = (path) => location.pathname === path
+  const isActive = (path) => location.pathname === path;
 
   return (
     <>
@@ -51,11 +53,11 @@ export default function Sidebar({ open, setOpen }) {
         {/* Logo Area */}
         <div className="p-8 border-b" style={{ borderColor: '#E5E7EB' }}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white" style={{ backgroundColor: '#E63946' }}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white" style={{ backgroundColor: 'var(--brand-primary, #E63946)' }}>
               🥐
             </div>
             <div>
-              <h2 className="font-bold text-lg" style={{ color: '#1F2937' }}>SuperIdeal</h2>
+              <h2 className="font-bold text-lg" style={{ color: '#1F2937' }}>{bakery?.bakeryName || 'Bakery'}</h2>
               <p className="text-xs" style={{ color: '#6B7280' }}>Admin Panel</p>
             </div>
           </div>
@@ -64,8 +66,8 @@ export default function Sidebar({ open, setOpen }) {
         {/* Navigation Menu */}
         <nav className="flex flex-col p-6 gap-2">
           {menuItems.map((item) => {
-            const Icon = item.icon
-            const active = isActive(item.path)
+            const Icon = item.icon;
+            const active = isActive(item.path);
             return (
               <Link
                 key={item.path}
@@ -76,22 +78,22 @@ export default function Sidebar({ open, setOpen }) {
                     ? 'text-white'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
-                style={active ? { backgroundColor: '#E63946' } : {}}
+                style={active ? { backgroundColor: 'var(--brand-primary, #E63946)' } : {}}
               >
                 <Icon className="w-5 h-5" />
                 <span>{item.name}</span>
               </Link>
-            )
+            );
           })}
         </nav>
 
         {/* Footer Info */}
         <div className="absolute bottom-0 left-0 right-0 p-6 border-t" style={{ borderColor: '#E5E7EB' }}>
           <p className="text-xs" style={{ color: '#6B7280' }}>
-            © 2024 SuperIdeal. All rights reserved.
+            © 2024 {bakery?.bakeryName || 'Bakery'}. All rights reserved.
           </p>
         </div>
       </aside>
     </>
-  )
+  );
 }

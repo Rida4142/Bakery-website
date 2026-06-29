@@ -2,11 +2,13 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, ArrowLeft, Truck, Store } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { createOrder } from '../services/api';
+import { useBakery } from '../context/BakeryContext';
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
+  const { bakery } = useBakery();
   const navigate = useNavigate();
   const [isCheckout, setIsCheckout] = useState(false);
   const [orderType, setOrderType] = useState('pickup');
@@ -22,6 +24,7 @@ const Cart = () => {
   const [error, setError] = useState('');
 
   const hasCakes = cartItems.some(item => item.pickupOnly);
+  const currencySymbol = bakery?.settings?.currencySymbol || 'Rs.';
 
   const getDeliveryFee = (distance) => {
     if (!distance || isNaN(distance) || Number(distance) <= 0) return 0;
@@ -181,11 +184,11 @@ const Cart = () => {
                   placeholder="Enter distance in km"
                   className="input-field max-w-xs"
                 />
-                {deliveryDistance && Number(deliveryDistance) > 0 && (
-                  <p className="text-sm text-gray-600 mt-1">Delivery Fee: Rs. {getDeliveryFee(deliveryDistance)}</p>
-                )}
+{deliveryDistance && Number(deliveryDistance) > 0 && (
+                   <p className="text-sm text-gray-600 mt-1">Delivery Fee: {currencySymbol}{getDeliveryFee(deliveryDistance)}</p>
+                 )}
                 <div className="text-xs text-gray-500 mt-1">
-                  Fee: ≤2km: Rs.50 | ≤5km: Rs.100 | ≤10km: Rs.150 | &gt;10km: Rs.200
+                  Fee: ≤2km: {currencySymbol}50 | ≤5km: {currencySymbol}100 | ≤10km: {currencySymbol}150 | &gt;10km: {currencySymbol}200
                 </div>
               </div>
             )}
@@ -200,7 +203,7 @@ const Cart = () => {
                 <div className="flex-1">
                   <h3 className="font-semibold">{item.name}</h3>
                   {item.pickupOnly && <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">Pickup Only</span>}
-                  <p className="text-primary font-bold">Rs. {item.price}</p>
+                   <p className="text-primary font-bold">{currencySymbol} {item.price}</p>
                   <div className="flex items-center gap-3 mt-2">
                     <button onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity - 1)} className="p-1 bg-gray-100 rounded"><Minus size={16} /></button>
                     <span>{item.quantity}</span>
@@ -215,9 +218,9 @@ const Cart = () => {
           <div className="bg-white rounded-2xl p-6 h-fit shadow-sm">
             <h3 className="text-xl font-bold mb-4">Order Summary</h3>
             <div className="space-y-2 text-textSecondary">
-              <div className="flex justify-between"><span>Subtotal:</span><span>Rs. {subtotal}</span></div>
-              <div className="flex justify-between"><span>Delivery Fee:</span><span>Rs. {deliveryFee}</span></div>
-              <div className="border-t pt-2 mt-2 font-bold text-textPrimary text-lg flex justify-between"><span>Total:</span><span>Rs. {grandTotal}</span></div>
+              <div className="flex justify-between"><span>Subtotal:</span><span>{currencySymbol} {subtotal}</span></div>
+              <div className="flex justify-between"><span>Delivery Fee:</span><span>{currencySymbol} {deliveryFee}</span></div>
+              <div className="border-t pt-2 mt-2 font-bold text-textPrimary text-lg flex justify-between"><span>Total:</span><span>{currencySymbol} {grandTotal}</span></div>
             </div>
             <button onClick={() => setIsCheckout(true)} className="btn-primary w-full mt-6">Proceed to Checkout</button>
           </div>
@@ -234,49 +237,49 @@ const Cart = () => {
                 <label className="block font-medium mb-1">Full Name *</label>
                 <input type="text" name="customerName" value={formData.customerName} onChange={handleInputChange} className="input-field" required />
               </div>
-              {orderType === 'delivery' && (
-                <>
-                  <div>
-                    <label className="block font-medium mb-1">Delivery Address *</label>
-                    <textarea name="address" value={formData.address} onChange={handleInputChange} rows={3} className="input-field" required />
-                  </div>
-                  <div>
-                    <label className="block font-medium mb-1">Delivery Distance (km) *</label>
-                    <input
-                      type="number"
-                      name="deliveryDistance"
-                      min="1"
-                      step="0.5"
-                      value={deliveryDistance}
-                      onChange={(e) => setDeliveryDistance(e.target.value)}
-                      className="input-field max-w-xs"
-                      required
-                    />
-                    {deliveryDistance && Number(deliveryDistance) > 0 && (
-                      <p className="text-sm text-gray-600 mt-1">Delivery Fee: Rs. {getDeliveryFee(deliveryDistance)}</p>
-                    )}
-                  </div>
-                </>
-              )}
-              {orderType === 'pickup' && (
-                <div>
-                  <label className="block font-medium mb-1">Pickup Location</label>
-                  <p className="text-sm text-gray-600">Sweet Bakery, Main Market, City Center</p>
-                </div>
-              )}
-              <div>
-                <label className="block font-medium mb-1">Phone Number *</label>
-                <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="input-field" required />
-              </div>
-              <div>
-                <label className="block font-medium mb-1">Special Instructions (Optional)</label>
-                <textarea name="notes" value={formData.notes} onChange={handleInputChange} rows={2} className="input-field" />
-              </div>
-              <div className="border-t pt-4 mt-4">
-                <div className="flex justify-between py-2"><span>Subtotal:</span><span>Rs. {subtotal}</span></div>
-                <div className="flex justify-between py-2"><span>Delivery Fee:</span><span>Rs. {deliveryFee}</span></div>
-                <div className="border-t pt-2 mt-2 font-bold text-textPrimary text-lg flex justify-between"><span>Total:</span><span>Rs. {grandTotal}</span></div>
-              </div>
+{orderType === 'delivery' && (
+                 <>
+                   <div>
+                     <label className="block font-medium mb-1">Delivery Address *</label>
+                     <textarea name="address" value={formData.address} onChange={handleInputChange} rows={3} className="input-field" required />
+                   </div>
+                   <div>
+                     <label className="block font-medium mb-1">Delivery Distance (km) *</label>
+                     <input
+                       type="number"
+                       name="deliveryDistance"
+                       min="1"
+                       step="0.5"
+                       value={deliveryDistance}
+                       onChange={(e) => setDeliveryDistance(e.target.value)}
+                       className="input-field max-w-xs"
+                       required
+                     />
+                     {deliveryDistance && Number(deliveryDistance) > 0 && (
+                       <p className="text-sm text-gray-600 mt-1">Delivery Fee: {currencySymbol}{getDeliveryFee(deliveryDistance)}</p>
+                     )}
+                   </div>
+                 </>
+               )}
+               {orderType === 'pickup' && (
+                 <div>
+                   <label className="block font-medium mb-1">Pickup Location</label>
+                   <p className="text-sm text-gray-600">{bakery?.bakeryName || 'Bakery'}, Main Market, City Center</p>
+                 </div>
+               )}
+               <div>
+                 <label className="block font-medium mb-1">Phone Number *</label>
+                 <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="input-field" required />
+               </div>
+               <div>
+                 <label className="block font-medium mb-1">Special Instructions (Optional)</label>
+                 <textarea name="notes" value={formData.notes} onChange={handleInputChange} rows={2} className="input-field" />
+               </div>
+               <div className="border-t pt-4 mt-4">
+                 <div className="flex justify-between py-2"><span>Subtotal:</span><span>{currencySymbol} {subtotal}</span></div>
+                 <div className="flex justify-between py-2"><span>Delivery Fee:</span><span>{currencySymbol} {deliveryFee}</span></div>
+                 <div className="border-t pt-2 mt-2 font-bold text-textPrimary text-lg flex justify-between"><span>Total:</span><span>{currencySymbol} {grandTotal}</span></div>
+               </div>
               <button type="button" onClick={handlePlaceOrder} className="btn-primary w-full py-3">Place Order</button>
             </form>
           </div>

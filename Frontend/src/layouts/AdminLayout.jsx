@@ -2,10 +2,12 @@
 import { NavLink, Link } from 'react-router-dom';
 import { LayoutDashboard, ShoppingBag, TrendingUp, Settings, LogOut, Users, FileText, Package, Menu, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useBakery } from '../context/BakeryContext';
 
 export default function AdminLayout({ children }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { bakery } = useBakery();
 
   useEffect(() => {
     const handleEsc = (e) => {
@@ -65,7 +67,7 @@ export default function AdminLayout({ children }) {
               </div>
               {!isCollapsed && (
                 <div className="min-w-0">
-                  <h2 className="text-lg font-bold text-white truncate">SuperIdeal</h2>
+                  <h2 className="text-lg font-bold text-white truncate">{bakery?.bakeryName || 'Bakery'}</h2>
                   <p className="text-gray-500 text-[10px] truncate">Admin Panel</p>
                 </div>
               )}
@@ -142,7 +144,7 @@ export default function AdminLayout({ children }) {
               {!isCollapsed && (
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-white truncate">Admin User</p>
-                  <p className="text-[10px] text-gray-500 truncate">admin@superideal.com</p>
+                  <p className="text-[10px] text-gray-500 truncate">admin@{bakery?.bakeryName?.toLowerCase().replace(/\s+/g, '') || 'bakery'}.com</p>
                 </div>
               )}
             </div>
@@ -175,7 +177,7 @@ export default function AdminLayout({ children }) {
                 <Package className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">SuperIdeal</h2>
+                <h2 className="text-lg font-bold text-white">{bakery?.bakeryName || 'Bakery'}</h2>
                 <p className="text-gray-500 text-[10px]">Admin Panel</p>
               </div>
             </div>

@@ -1,142 +1,397 @@
-import { useState } from 'react'
-import AdminLayout from '../layouts/AdminLayout'
-import { FiSave } from 'react-icons/fi'
+import { useState, useEffect } from 'react';
+import AdminLayout from '../layouts/AdminLayout';
+import { FiSave } from 'react-icons/fi';
+import API from '../services/api';
 
 export default function Settings() {
-  const [bakeryName, setBakeryName] = useState('BakeryBox')
-  const [phoneNumber, setPhoneNumber] = useState('(555) 123-4567')
-  const [address, setAddress] = useState('123 Main Street, New York, NY 10001')
-  const [whatsappNumber, setWhatsappNumber] = useState('+1 (555) 123-4567')
-  const [saved, setSaved] = useState(false)
+  const [settings, setSettings] = useState({
+    bakeryName: '',
+    phone: '',
+    whatsappNumber: '',
+    address: '',
+    logo: '',
+    theme: {
+      primaryColor: '#E63946',
+      secondaryColor: '#F4C542',
+      accentColor: '#E63946',
+      fontFamily: ''
+    },
+    settings: {
+      showHeroBanner: true,
+      showAnnouncement: false,
+      announcementText: '',
+      announcementColor: '#E63946',
+      heroHeading: '',
+      heroSubheading: '',
+      heroImage: '',
+      menuLayout: 'grid',
+      onlineOrderingEnabled: true,
+      requirePhone: false,
+      requireAddress: false,
+      requireEmail: false,
+      openingHours: '',
+      currencySymbol: 'Rs.'
+    }
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
-  const handleSave = () => {
-    // TODO: Connect to backend API to save settings
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
-    console.log({
-      bakeryName,
-      phoneNumber,
-      address,
-      whatsappNumber
-    })
+  useEffect(() => {
+    API.get('/settings')
+      .then(res => {
+        setSettings(prev => ({
+          ...prev,
+          ...res.data,
+          theme: { ...prev.theme, ...res.data.theme },
+          settings: { ...prev.settings, ...res.data.settings }
+        }));
+      })
+      .catch(err => {
+        console.error('Failed to load settings:', err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  const handleChange = (field, value) => {
+    setSettings(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleThemeChange = (field, value) => {
+    setSettings(prev => ({
+      ...prev,
+      theme: { ...prev.theme, [field]: value }
+    }));
+  };
+
+  const handleSettingsChange = (field, value) => {
+    setSettings(prev => ({
+      ...prev,
+      settings: { ...prev.settings, [field]: value }
+    }));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await API.put('/admin/settings', {
+        bakeryName: settings.bakeryName,
+        phone: settings.phone,
+        whatsappNumber: settings.whatsappNumber,
+        address: settings.address,
+        logo: settings.logo,
+        theme: settings.theme,
+        settings: settings.settings
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      console.error('Failed to save settings:', err);
+      alert('Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-textSecondary">Loading settings...</p>
+        </div>
+      </AdminLayout>
+    );
   }
 
   return (
     <AdminLayout>
-      {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-3xl lg:text-4xl font-bold mb-2" style={{ color: '#1F2937' }}>
+        <h1 className="text-3xl lg:text-4xl font-bold mb-2 text-textPrimary">
           Settings
         </h1>
-        <p style={{ color: '#6B7280' }}>Manage your bakery information</p>
+        <p className="text-textSecondary">Manage your bakery information and branding</p>
       </div>
 
-      {/* Settings Form */}
-      <div className="max-w-2xl mx-auto rounded-[20px] p-6 lg:p-8 shadow-md" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
-        <div className="space-y-6">
-          {/* Bakery Name */}
-          <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: '#1F2937' }}>
-              Bakery Name
-            </label>
-            <input
-              type="text"
-              value={bakeryName}
-              onChange={(e) => setBakeryName(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition"
-              style={{
-                borderColor: '#E5E7EB',
-                '--tw-ring-color': '#E63946'
-              }}
-            />
-          </div>
-
-          {/* Phone Number */}
-          <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: '#1F2937' }}>
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition"
-              style={{
-                borderColor: '#E5E7EB',
-                '--tw-ring-color': '#E63946'
-              }}
-            />
-          </div>
-
-          {/* Address */}
-          <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: '#1F2937' }}>
-              Address
-            </label>
-            <textarea
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              rows="3"
-              className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition resize-none"
-              style={{
-                borderColor: '#E5E7EB',
-                '--tw-ring-color': '#E63946'
-              }}
-            />
-          </div>
-
-          {/* WhatsApp Number */}
-          <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: '#1F2937' }}>
-              WhatsApp Number
-            </label>
-            <input
-              type="tel"
-              value={whatsappNumber}
-              onChange={(e) => setWhatsappNumber(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition"
-              style={{
-                borderColor: '#E5E7EB',
-                '--tw-ring-color': '#E63946'
-              }}
-            />
-            <p className="text-xs mt-2" style={{ color: '#6B7280' }}>
-              This number will be used for customer WhatsApp communications
-            </p>
-          </div>
-
-          {/* Save Button */}
-          <div className="pt-6 border-t" style={{ borderColor: '#E5E7EB' }}>
-            <button
-              onClick={handleSave}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white transition w-full sm:w-auto"
-              style={{
-                backgroundColor: '#E63946'
-              }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#D62839'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#E63946'}
-            >
-              <FiSave className="w-5 h-5" />
-              <span>Save Changes</span>
-            </button>
-
-            {/* Save Success Message */}
-            {saved && (
-              <p className="text-sm mt-4 p-3 rounded-lg" style={{ backgroundColor: '#DCFCE7', color: '#166534' }}>
-                ✓ Settings saved successfully!
-              </p>
-            )}
+      <div className="max-w-4xl space-y-8">
+        {/* Bakery Info */}
+        <div className="bg-white rounded-[20px] p-6 lg:p-8 shadow-md border border-gray-200">
+          <h2 className="text-xl font-bold mb-4 text-textPrimary">Bakery Info</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-textPrimary">Bakery Name</label>
+              <input
+                type="text"
+                value={settings.bakeryName}
+                onChange={(e) => handleChange('bakeryName', e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-textPrimary">Phone</label>
+              <input
+                type="tel"
+                value={settings.phone}
+                onChange={(e) => handleChange('phone', e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-textPrimary">WhatsApp Number</label>
+              <input
+                type="tel"
+                value={settings.whatsappNumber}
+                onChange={(e) => handleChange('whatsappNumber', e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-textPrimary">Address</label>
+              <textarea
+                value={settings.address}
+                onChange={(e) => handleChange('address', e.target.value)}
+                rows="3"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary transition resize-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-textPrimary">Logo URL</label>
+              <input
+                type="text"
+                value={settings.logo}
+                onChange={(e) => handleChange('logo', e.target.value)}
+                placeholder="https://example.com/logo.png"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary transition"
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Implementation Notes */}
-      <div className="mt-8 max-w-2xl mx-auto p-4 rounded-lg" style={{ backgroundColor: '#FFF8F5', border: '1px solid #E5E7EB' }}>
-        <p className="text-sm" style={{ color: '#6B7280' }}>
-          💡 <strong>Future Enhancement:</strong> Connect to backend API to save bakery settings to database. 
-          Add logo upload, business hours, and payment method configuration.
-        </p>
+        {/* Branding */}
+        <div className="bg-white rounded-[20px] p-6 lg:p-8 shadow-md border border-gray-200">
+          <h2 className="text-xl font-bold mb-4 text-textPrimary">Branding</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-textPrimary">Primary Color</label>
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  value={settings.theme.primaryColor}
+                  onChange={(e) => handleThemeChange('primaryColor', e.target.value)}
+                  className="w-16 h-10 rounded-lg border border-gray-300 cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={settings.theme.primaryColor}
+                  onChange={(e) => handleThemeChange('primaryColor', e.target.value)}
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-textPrimary">Secondary Color</label>
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  value={settings.theme.secondaryColor}
+                  onChange={(e) => handleThemeChange('secondaryColor', e.target.value)}
+                  className="w-16 h-10 rounded-lg border border-gray-300 cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={settings.theme.secondaryColor}
+                  onChange={(e) => handleThemeChange('secondaryColor', e.target.value)}
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-textPrimary">Accent Color</label>
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  value={settings.theme.accentColor}
+                  onChange={(e) => handleThemeChange('accentColor', e.target.value)}
+                  className="w-16 h-10 rounded-lg border border-gray-300 cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={settings.theme.accentColor}
+                  onChange={(e) => handleThemeChange('accentColor', e.target.value)}
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Hero Banner */}
+        <div className="bg-white rounded-[20px] p-6 lg:p-8 shadow-md border border-gray-200">
+          <h2 className="text-xl font-bold mb-4 text-textPrimary">Hero Banner</h2>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={settings.settings.showHeroBanner}
+                onChange={(e) => handleSettingsChange('showHeroBanner', e.target.checked)}
+                className="w-5 h-5 rounded"
+              />
+              <label className="text-sm font-semibold text-textPrimary">Show Hero Banner</label>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-textPrimary">Hero Heading</label>
+              <input
+                type="text"
+                value={settings.settings.heroHeading}
+                onChange={(e) => handleSettingsChange('heroHeading', e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-textPrimary">Hero Subheading</label>
+              <input
+                type="text"
+                value={settings.settings.heroSubheading}
+                onChange={(e) => handleSettingsChange('heroSubheading', e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-textPrimary">Hero Image URL</label>
+              <input
+                type="text"
+                value={settings.settings.heroImage}
+                onChange={(e) => handleSettingsChange('heroImage', e.target.value)}
+                placeholder="https://example.com/hero.jpg"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary transition"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Announcement Bar */}
+        <div className="bg-white rounded-[20px] p-6 lg:p-8 shadow-md border border-gray-200">
+          <h2 className="text-xl font-bold mb-4 text-textPrimary">Announcement Bar</h2>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={settings.settings.showAnnouncement}
+                onChange={(e) => handleSettingsChange('showAnnouncement', e.target.checked)}
+                className="w-5 h-5 rounded"
+              />
+              <label className="text-sm font-semibold text-textPrimary">Show Announcement</label>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-textPrimary">Announcement Text</label>
+              <input
+                type="text"
+                value={settings.settings.announcementText}
+                onChange={(e) => handleSettingsChange('announcementText', e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-textPrimary">Announcement Color</label>
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  value={settings.settings.announcementColor}
+                  onChange={(e) => handleSettingsChange('announcementColor', e.target.value)}
+                  className="w-16 h-10 rounded-lg border border-gray-300 cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={settings.settings.announcementColor}
+                  onChange={(e) => handleSettingsChange('announcementColor', e.target.value)}
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Ordering */}
+        <div className="bg-white rounded-[20px] p-6 lg:p-8 shadow-md border border-gray-200">
+          <h2 className="text-xl font-bold mb-4 text-textPrimary">Ordering</h2>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={settings.settings.onlineOrderingEnabled}
+                onChange={(e) => handleSettingsChange('onlineOrderingEnabled', e.target.checked)}
+                className="w-5 h-5 rounded"
+              />
+              <label className="text-sm font-semibold text-textPrimary">Online Ordering Enabled</label>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-textPrimary">Currency Symbol</label>
+              <input
+                type="text"
+                value={settings.settings.currencySymbol}
+                onChange={(e) => handleSettingsChange('currencySymbol', e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-textPrimary">Opening Hours</label>
+              <input
+                type="text"
+                value={settings.settings.openingHours}
+                onChange={(e) => handleSettingsChange('openingHours', e.target.value)}
+                placeholder="Mon - Sun: 7:00 AM - 3:00 AM"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary transition"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={settings.settings.requirePhone}
+                onChange={(e) => handleSettingsChange('requirePhone', e.target.checked)}
+                className="w-5 h-5 rounded"
+              />
+              <label className="text-sm font-semibold text-textPrimary">Require Phone Number</label>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={settings.settings.requireAddress}
+                onChange={(e) => handleSettingsChange('requireAddress', e.target.checked)}
+                className="w-5 h-5 rounded"
+              />
+              <label className="text-sm font-semibold text-textPrimary">Require Delivery Address</label>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={settings.settings.requireEmail}
+                onChange={(e) => handleSettingsChange('requireEmail', e.target.checked)}
+                className="w-5 h-5 rounded"
+              />
+              <label className="text-sm font-semibold text-textPrimary">Require Email</label>
+            </div>
+          </div>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 px-8 py-3 rounded-xl font-semibold text-white transition disabled:opacity-50 bg-brand-primary hover:bg-brand-accent"
+          >
+            <FiSave className="w-5 h-5" />
+            <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+          </button>
+        </div>
+
+        {saved && (
+          <div className="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+            ✓ Settings saved successfully!
+          </div>
+        )}
       </div>
     </AdminLayout>
-  )
+  );
 }

@@ -1,27 +1,16 @@
-import { useState, useEffect } from "react";
-import useProducts from "../hooks/useProducts";
+import { useState } from "react";
+import useProducts, { useCategories } from "../hooks/useProducts";
 import ProductCard from "../components/ProductCard";
 import CategoryFilter from "../components/CategoryFilter";
 import { useCart } from "../context/CartContext";
-import { getCategories } from "../services/api";
 import "../menu.css";
 
 const MenuPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [categories, setCategories] = useState(["All", "Donuts", "Cookies", "Breads", "Cakes", "Pastries"]);
   const { getCartCount } = useCart();
   const cartCount = getCartCount();
   const { products, loading, error } = useProducts(selectedCategory);
-
-  useEffect(() => {
-    getCategories()
-      .then(res => {
-        if (Array.isArray(res.data) && res.data.length > 0) {
-          setCategories(["All", ...res.data.map(c => c.name)]);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const { categories } = useCategories();
 
   return (
     <div className="menu-page">
@@ -110,15 +99,14 @@ const MenuPage = () => {
             <p className="menu-status empty">No items in this category.</p>
           )}
 
-          <div className="products-grid">
-             {!loading && !error && products.map((product, i) => (
-               <ProductCard
-                 key={product._id}
-                 product={product}
-                 delay={i * 0.05}
-               />
-             ))}
-           </div>
+<div className="products-grid">
+              {!loading && !error && products.map(product => (
+                <ProductCard
+                  key={product._id}
+                  product={product}
+                />
+              ))}
+            </div>
         </div>
 
       </div>

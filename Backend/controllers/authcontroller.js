@@ -34,36 +34,6 @@ const login = async (req, res) => {
   }
 };
 
-// POST /api/auth/create-admin
-// Run this ONCE to create the first admin for this bakery deployment.
-// After that, protect or remove this route so strangers can't create admins.
-const createAdmin = async (req, res) => {
-  try {
-    const { username, password, role = 'admin' } = req.body;
-
-    if (!username || !password)
-      return res.status(400).json({ message: 'Username and password are required' });
-
-    const existingUser = await User.findOne({ username });
-    if (existingUser)
-      return res.status(400).json({ message: 'Username already taken' });
-
-    const bakery = await Bakery.findOne();
-    if (!bakery)
-      return res.status(400).json({ message: 'No bakery found — run seed.js first' });
-
-    const passwordHash = await bcrypt.hash(password, 12);
-    const user = await User.create({ bakeryId: bakery._id, username, passwordHash, role });
-
-    res.status(201).json({
-      message: 'Admin created',
-      user: { id: user._id, username: user.username, role: user.role }
-    });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-};
-
 // GET /api/auth/me — verify token and return current user
 const getMe = async (req, res) => {
   try {
@@ -75,4 +45,4 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { login, createAdmin, getMe };
+module.exports = { login, getMe };

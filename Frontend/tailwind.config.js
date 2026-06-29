@@ -15,6 +15,11 @@ export default {
         textSecondary: '#6B7280',
         border: '#E5E7EB',
         whatsapp: '#25D366',
+        brand: {
+          primary: 'var(--brand-primary)',
+          secondary: 'var(--brand-secondary)',
+          accent: 'var(--brand-accent)',
+        },
       },
       borderRadius: {
         xl: '1rem',

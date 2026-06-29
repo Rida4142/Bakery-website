@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Package, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import API from '../services/api';
+import { useBakery } from '../context/BakeryContext';
 
 const AdminLogin = () => {
   const [username, setUsername] = useState('');
@@ -11,6 +12,7 @@ const AdminLogin = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { bakery } = useBakery();
 
   const isAuthenticated = () => sessionStorage.getItem('adminToken') !== null;
 
@@ -41,7 +43,7 @@ const AdminLogin = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#cc1f1f] shadow-xl mb-4">
             <Package className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">SuperIdeal</h1>
+          <h1 className="text-3xl font-bold text-white tracking-tight">{bakery?.bakeryName || 'Bakery Admin'}</h1>
           <p className="text-gray-400 text-sm mt-1">Bakery Admin Panel</p>
         </div>
 

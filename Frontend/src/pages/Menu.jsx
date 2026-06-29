@@ -1,8 +1,7 @@
 // src/pages/Menu.jsx
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import useProducts from '../hooks/useProducts';
-import { categories } from '../data/products';
+import useProducts, { useCategories } from '../hooks/useProducts';
 import ProductCard from '../components/ProductCard';
 
 const Menu = () => {
@@ -12,6 +11,7 @@ const Menu = () => {
     categoryParam && categoryParam.toLowerCase() !== 'all' ? categoryParam : 'All'
   );
   const { products, loading, error } = useProducts(activeCategory);
+  const { categories } = useCategories();
 
   const filteredProducts = activeCategory === 'All' ? products : products;
 
